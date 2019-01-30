@@ -28,7 +28,8 @@ recommended(nosh,students).
 totalTime(X,T):-distance(X,Td,_),mealTime(X,Tm), T is Td+Tm.
 totalCost(X,C):-distance(X,_,Cd),price(X,Cm), C is Cd+Cm.
 acceptableRestaurant(X):-cuisine(X, thai).
-acceptableRestaurant(X):-quality(X,good), ( quality(Y,good), cheaper(Y,X) -> false ; true ).
+acceptableRestaurant(X):-quality(X,good),(quality(Y,good),cheaper(Y,X)->false;true).
 acceptableRestaurant(X):-quality(X,good),healthy(X).
-cheaper(X,Y):-totalCost(X,Cx),totalCost(Y,Cy),Cy < Cx. 
+acceptableRestaurant(X):-quality(X,good),atmosphere(X),wine(X),distance(X,Tx,0),(quality(Y,good),atmosphere(Y),wine(Y),quicker(Y,X)->false;true).
+cheaper(X,Y):-totalCost(X,Cx),totalCost(Y,Cy),Cy < Cx.
 quicker(X,Y):-totalTime(X,Tx),totalTime(Y,Ty),Ty < Tx.
