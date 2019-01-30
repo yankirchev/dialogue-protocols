@@ -1,15 +1,16 @@
-import Agent from "./Agent";
-import { translateTerm } from "./helper";
+import pl from 'tau-prolog';
+import { translateTerm } from './helper';
 
 class Dialogue {
-  agents = [Agent];
-  text = "";
-  commitmentStoreHistory = [[]];
+  text = '';
+  commitmentStoreHistory = [];
 
-  constructor() {
+  constructor(agents) {
     if (new.target === Dialogue) {
-      throw new TypeError("Cannot construct Dialogue instances directly!");
+      throw new TypeError('Cannot construct Dialogue instances directly!');
     }
+
+    this.agents = agents;
   }
 
   saveCommitmentStores() {
@@ -38,7 +39,7 @@ class Dialogue {
 
   }
 
-  since(agent, term) {
+  since(agent, otherAgent, term, justification) {
 
   }
 
@@ -46,7 +47,5 @@ class Dialogue {
 
   }
 }
-
-translateTerm("");
 
 export default Dialogue;
