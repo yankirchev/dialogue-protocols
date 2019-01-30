@@ -1,7 +1,5 @@
 class Agent {
-  name;
-  knowledgeBase;
-  commitmentstore = "";
+  commitmentStore = '';
 
   constructor(name, knowledgeBase) {
     this.name = name;
