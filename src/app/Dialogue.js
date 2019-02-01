@@ -28,11 +28,11 @@ class Dialogue {
     /*  PRE-CONDITIONS */
 
     // demo(∏_􏰖ag_i ∪ Com_ag_i, l)
-    const session = pl.create(1000);
-    session.consult(agent.knowledgeBase + agent.commitmentStore);
-    session.query(term);
+    const prologSession = pl.create();
+    prologSession.consult(agent.knowledgeBase + agent.commitmentStore);
+    prologSession.query(term);
 
-    if (!session.answer) {
+    if (!prologSession.answer) {
       throw new Error(`Pre-conditions of claimimg "${translate(term)}" by ${agent} are not satisfied because \
                       the agent cannot demonstrate the claim through their commitment store and/or knowledge base!`);
     }
@@ -50,8 +50,34 @@ class Dialogue {
     // Com_ag_i ⇒ Com_ag_i ∪ l
     agent.commitmentStore += term;
   }
-  why(agent, term) {
 
+  // Why(ag_i, l)
+  why(agent, term) {
+    /*  PRE-CONDITIONS */
+
+    // not demo(∏_􏰖ag_i ∪ Com_ag_i , l)
+    const prologSession = pl.create();
+    prologSession.consult(agent.knowledgeBase + agent.commitmentStore);
+    prologSession.query(term);
+
+    if (prologSession.answer) {
+      throw new Error(`Pre-conditions of asking why "${translate(term)}" by ${agent} are not satisfied because \
+                      the agent can already demonstrate the claim through their commitment store and/or knowledge base!`);
+    }
+
+    // for some agent ag_j /= ag_i, l ∈ Com_ag_j
+    let doesAppear = false;
+
+    for (const someAgent in this.agents) {
+      if (someAgent !== agent && someAgent.commitmentStore.contains(term)) {
+        doesAppear = true;
+      }
+    }
+
+    if (doesAppear === false) {
+      throw new Error(`Pre-conditions of asking why "${translate(term)}" by ${agent} are not satisfied because \
+                      no other agent's commitment store contains the claim!`);
+    }
   }
 
   concede(agent, term) {
