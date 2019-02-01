@@ -160,8 +160,32 @@ class Dialogue {
 
   }
 
+  // Question(ag_i ,l)
   question(agent, term) {
+    /* PRE-CONDITIONS */
 
+    // ∀(ag_j) ∈ Ag,l /∈ Com_ag_j
+    for (const anyAgent in this.agents) {
+      if (anyAgent.commitmentStore.contains(term)) {
+        throw new Error(`Pre-conditions of questioning  "${translate(term)}" by ${agent} are not satisfied because \
+                        ${anyAgent}'s commitment store contains the claim!`);
+      }
+    }
+
+    // not demo(∏_􏰖ag_i ∪ Com_ag_i , l)
+    const prologSession = pl.create();
+    prologSession.consult(agent.knowledgeBase + agent.commitmentStore);
+    prologSession.query(term);
+
+    if (prologSession.answer) {
+      throw new Error(`Pre-conditions of questioning "${translate(term)}" by ${agent} are not satisfied because \
+                      the agent can already demonstrate the claim through their commitment store and/or knowledge base!`);
+    }
+
+    /* UPDATE DIALOGUE TEXT AND SAVE COMMITMENT STORE HISTORY */
+
+    this.text += `${agent.name} questions if ${translate(term)}.\n`
+    this.saveCommitmentStores();
   }
 }
 
