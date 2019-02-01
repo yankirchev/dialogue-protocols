@@ -50,7 +50,7 @@ class Dialogue {
     // Com_ag_i ⇒ Com_ag_i ∪ l
     agent.commitmentStore += `${term} \n`;
 
-    /* UPDATE DIALOGUE TEXT AND COMMITMENT STORE HISTORY */
+    /* UPDATE DIALOGUE TEXT AND SAVE COMMITMENT STORE HISTORY */
 
     this.text += `${agent.name} claims that ${translate(term)}.\n`
     this.saveCommitmentStores();
@@ -84,7 +84,7 @@ class Dialogue {
                       no other agent's commitment store contains the claim!`);
     }
 
-    /* UPDATE DIALOGUE TEXT AND COMMITMENT STORE HISTORY */
+    /* UPDATE DIALOGUE TEXT AND SAVE COMMITMENT STORE HISTORY */
 
     this.text += `${agent.name} asks why is it that ${translate(term)}.\n`
     this.saveCommitmentStores();
@@ -119,13 +119,41 @@ class Dialogue {
     // Com_ag_i ⇒ Com_ag_i ∪ l
     agent.commitmentStore += `${term} \n`;
 
-    /* UPDATE DIALOGUE TEXT AND COMMITMENT STORE HISTORY */
+    /* UPDATE DIALOGUE TEXT AND SAVE COMMITMENT STORE HISTORY */
 
     this.text += `${agent.name} concedes to the claim that ${translate(term)}.\n`
     this.saveCommitmentStores();
   }
-  retract(agent, term) {
 
+  // Retract(ag_i ,l)
+  retract(agent, term) {
+    /* PRE-CONDITIONS */
+
+    // not demo(􏰖∏_ag_i ∪ Com_ag_i \ l, l)
+    const prologSession = pl.create();
+    prologSession.consult(agent.knowledgeBase + agent.commitmentStore.replace(term, ''));
+    prologSession.query(term);
+
+    if (prologSession.answer) {
+      throw new Error(`Pre-conditions of retracting "${translate(term)}" by ${agent} are not satisfied because \
+                      the agent can still demonstrate the claim through their remaining commitment store and/or knowledge base!`);
+    }
+
+    // l ∈ Com_ag_i
+    if (!agent.commitmentStore.contains(term)) {
+      throw new Error(`Pre-conditions of retracting "${translate(term)}" by ${agent} are not satisfied because \
+                      the agent's commitment store does not contain the claim!`);
+    }
+
+    /* POST-CONDITIONS */
+
+    // Com_ag_i ⇒ Com_ag_i \ l
+    agent.commitmentStore = agent.commitmentStore.replace(term, '');
+
+    /* UPDATE DIALOGUE TEXT AND SAVE COMMITMENT STORE HISTORY */
+
+    this.text += `${agent.name} retracts the claim that ${translate(term)}.\n`
+    this.saveCommitmentStores();
   }
 
   since(agent, otherAgent, term, justification) {
