@@ -16,7 +16,7 @@ class Dialogue {
   saveCommitmentStores() {
     const newCommitmentStoresRecord = [];
 
-    for (const agent in this.agents) {
+    for (const agent of this.agents) {
       newCommitmentStoresRecord.push(agent.commitmentStore);
     }
 
@@ -38,7 +38,7 @@ class Dialogue {
     }
 
     // ¬l ∈ Com_ag_j for any ag_j ∈ Ag
-    for (const anyAgent in this.agents) {
+    for (const anyAgent of this.agents) {
       if (anyAgent.commitmentStore.contains(term)) {
         throw new Error(`Pre-conditions of claimimg "${translate(term)}" by ${agent} are not satisfied because \
                         ${anyAgent}'s commitment store already contains the claim!`);
@@ -73,7 +73,7 @@ class Dialogue {
     // for some agent ag_j /= ag_i, l ∈ Com_ag_j
     let doesAppear = false;
 
-    for (const someAgent in this.agents) {
+    for (const someAgent of this.agents) {
       if (someAgent !== agent && someAgent.commitmentStore.contains(term)) {
         doesAppear = true;
       }
@@ -97,7 +97,7 @@ class Dialogue {
     // for some agent ag_j /= ag_i, l ∈ Com_ag_j
     let doesAppear = false;
 
-    for (const someAgent in this.agents) {
+    for (const someAgent of this.agents) {
       if (someAgent !== agent && someAgent.commitmentStore.contains(term)) {
         doesAppear = true;
       }
@@ -156,8 +156,64 @@ class Dialogue {
     this.saveCommitmentStores();
   }
 
-  since(agent, otherAgent, term, justification) {
+  // Since(ag_i, l, ∏􏰖)
+  since(agent, otherAgent, term, justifications) {
+    /* PRE-CONDITIONS */
 
+    // l ∈ Com_ag_i
+    if (!agent.commitmentStore.contains(term)) {
+      throw new Error(`Pre-conditions of offering reasoning for "${translate(term)}" by ${agent} are not satisfied because \
+                      the agent's commitment store does not contain the claim!`);
+    }
+
+    // demo(􏰖∏ ∪ Com_ag_j, l) for some ∏ 􏰖⊆ ∏_􏰖ag_i
+    for (const justification of justifications) {
+      if (!agent.knowledgeBase.contains(justification)) {
+        throw new Error(`Pre-conditions of offering reasoning for "${translate(term)}" by ${agent} are not satisfied because \
+                      the agent's knowledge base does not contain all justifications!`);
+      }
+    }
+
+    let justificationsInPrologFormat = '';
+
+    for (const justification of justifications) {
+      justificationsInPrologFormat += `${justification} \n`;
+    }
+
+    const prologSession = pl.create();
+    prologSession.consult(justificationsInPrologFormat + otherAgent.commitmentStore);
+    prologSession.query(term);
+
+    if (!prologSession.answer) {
+      throw new Error(`Pre-conditions of offering reasoning for "${translate(term)}" by ${agent} are not satisfied because \
+                      the other agent cannot demonstrate the claim through the justifications and their commitment store!`);
+    }
+
+    /* POST-CONDITIONS */
+
+    // Com_ag_i ⇒ Com_ag_i ∪ ∏ 􏰖
+    agent.commitmentStore += `${justificationsInPrologFormat} \n`;
+
+    // Com_ag_j ⇒ Com_ag_i ∪ ∏ 􏰖
+    otherAgent.commitmentStore += `${justificationsInPrologFormat} \n`;
+
+    /* UPDATE DIALOGUE TEXT AND SAVE COMMITMENT STORE HISTORY */
+
+    this.text += `${agent.name} explains that ${translate(term)} since `
+
+    for (const [index, justification] of justifications.entries()) {
+      if (justifications.length === 1) {
+        this.text += `${translate(justification)}. \n`
+      } else if (index !== justifications.length - 2) {
+        this.text += `${translate(justification)}, `
+      } else if (index === justifications.length - 2) {
+        this.text += `${translate(justification)} and `
+      } else {
+        this.text += `${translate(justification)}. \n`
+      }
+    }
+
+    this.saveCommitmentStores();
   }
 
   // Question(ag_i ,l)
@@ -165,7 +221,7 @@ class Dialogue {
     /* PRE-CONDITIONS */
 
     // ∀(ag_j) ∈ Ag,l /∈ Com_ag_j
-    for (const anyAgent in this.agents) {
+    for (const anyAgent of this.agents) {
       if (anyAgent.commitmentStore.contains(term)) {
         throw new Error(`Pre-conditions of questioning  "${translate(term)}" by ${agent} are not satisfied because \
                         ${anyAgent}'s commitment store contains the claim!`);
