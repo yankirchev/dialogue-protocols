@@ -1,5 +1,5 @@
 import pl from 'tau-prolog';
-import { translate } from './helper';
+import { format, translate } from './helper';
 
 class Dialogue {
   constructor(agents) {
@@ -203,19 +203,8 @@ class Dialogue {
 
     /* UPDATE DIALOGUE TEXT AND SAVE COMMITMENT STORE HISTORY */
 
-    this.text += `${agent.name} explains that ${translate(term)} since if `
-
-    for (const [index, justification] of justifications.entries()) {
-      if (justifications.length === 1) {
-        this.text += `${translate(justification)}. \n`
-      } else if (index === justifications.length - 1) {
-        this.text += `${translate(justification)}. \n`
-      } else if (index !== justifications.length - 2) {
-        this.text += `${translate(justification)}, `
-      } else if (index === justifications.length - 2) {
-        this.text += `${translate(justification)}, and `
-      }
-    }
+    this.text += `${agent.name} explains that ${translate(term)} since `
+    this.text += format(justifications);
 
     this.saveCommitmentStores();
   }
