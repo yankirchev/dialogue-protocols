@@ -1,7 +1,6 @@
 class Agent {
-  commitmentStore = '';
-
   constructor(name, knowledgeBase, preferenceRule) {
+    this.commitmentStore = '';
     this.name = name;
     this.knowledgeBase = knowledgeBase;
     this.preferenceRule = preferenceRule;
