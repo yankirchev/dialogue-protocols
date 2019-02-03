@@ -203,9 +203,23 @@ class Dialogue {
 
     /* UPDATE DIALOGUE TEXT AND SAVE COMMITMENT STORE HISTORY */
 
-    this.text += `${agent.name} explains that ${translate(term)} since `
-    this.text += format(justifications);
+    justifications = justifications[0].split('-')[1].split(', ')[0].replace(/X/g, term.match(/([A-Za-z0-9])+/g)[1]);
 
+    for (const match of justifications.match(/([A-Za-z0-9])+/g)) {
+      if (match[0] !== match[0].toLowerCase()) {
+        const prologSession = pl.create();
+        prologSession.consult(agent.knowledgeBase + agent.commitmentStore);
+
+        if (justifications[justifications.length - 1] !== '.' && justifications[justifications.length - 2] !== '.') {
+          justifications = justifications + '.'
+        }
+
+        prologSession.query(justifications);
+        prologSession.answer(x => justifications = justifications.replace(match, pl.format_answer(x).split(" ")[2].replace(/,|\./g, '')));
+      }
+    }
+
+    this.text += `${agent.name} explains that ${translate(term)} since ${format(justifications.split('),'))}. \n`
     this.saveCommitmentStores();
   }
 
