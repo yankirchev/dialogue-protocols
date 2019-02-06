@@ -49,7 +49,7 @@ class Dialogue {
     /* POST-CONDITIONS */
 
     // Com_ag_i ⇒ Com_ag_i ∪ l
-    agent.commitmentStore += `${term} \n`;
+    agent.commitmentStore += `${term}\n`;
 
     /* UPDATE DIALOGUE TEXT AND SAVE COMMITMENT STORE HISTORY */
 
@@ -110,16 +110,25 @@ class Dialogue {
         `no other agent's commitment store contains the claim!`);
     }
 
-    // not (¬l ∈ Com_ag_i )
-    if (agent.commitmentStore.includes(`not(${term.substring(0, term.length - 1)}).`)) {
-      throw new Error(`Pre-conditions of ${agent.name} conceding to "${translate(term)}" are not satisfied because \
-                      the agent's commitment store already contains the negation of the claim!`);
+    // not(¬l ∈ Com_ag_i )
+    if (term.includes('\\+(')) {
+      if (agent.commitmentStore.includes(`${term.substring(3, term.length - 2)}.`)) {
+        throw new Error(`Pre-conditions of ${agent.name} conceding to "${translate(term)}" are not satisfied because ` +
+          `the agent's commitment store already contains the negation of the claim!`);
+      }
+    } else {
+      if (agent.commitmentStore.includes(`\\+(${term.substring(0, term.length - 1)}).`)) {
+        throw new Error(`Pre-conditions of ${agent.name} conceding to "${translate(term)}" are not satisfied because ` +
+          `the agent's commitment store already contains the negation of the claim!`);
+      }
     }
 
     /* POST-CONDITIONS */
 
     // Com_ag_i ⇒ Com_ag_i ∪ l
-    agent.commitmentStore += `${term} \n`;
+    if (!agent.commitmentStore.includes(term)) {
+      agent.commitmentStore += `${term}\n`;
+    }
 
     /* UPDATE DIALOGUE TEXT AND SAVE COMMITMENT STORE HISTORY */
 
@@ -151,7 +160,7 @@ class Dialogue {
     /* POST-CONDITIONS */
 
     // Com_ag_i ⇒ Com_ag_i \ l
-    agent.commitmentStore = agent.commitmentStore.replace(term, '');
+    agent.commitmentStore = agent.commitmentStore.replace(`${term}\n`, '');
 
     /* UPDATE DIALOGUE TEXT AND SAVE COMMITMENT STORE HISTORY */
 
@@ -180,7 +189,7 @@ class Dialogue {
     let justificationsInPrologFormat = '';
 
     for (const justification of justifications) {
-      justificationsInPrologFormat += `${justification} \n`;
+      justificationsInPrologFormat += `${justification}\n`;
     }
 
     const prologSession = pl.create();
@@ -197,10 +206,18 @@ class Dialogue {
     /* POST-CONDITIONS */
 
     // Com_ag_i ⇒ Com_ag_i ∪ ∏ 􏰖
-    agent.commitmentStore += `${justificationsInPrologFormat} \n`;
+    for (const justification of justifications) {
+      if (!agent.commitmentStore.includes(justification)) {
+        agent.commitmentStore += `${justification}\n`;
+      }
+    }
 
     // Com_ag_j ⇒ Com_ag_j ∪ ∏ 􏰖
-    otherAgent.commitmentStore += `${justificationsInPrologFormat} \n`;
+    for (const justification of justifications) {
+      if (!otherAgent.commitmentStore.includes(justification)) {
+        otherAgent.commitmentStore += `${justification}\n`;
+      }
+    }
 
     /* UPDATE DIALOGUE TEXT AND SAVE COMMITMENT STORE HISTORY */
 
