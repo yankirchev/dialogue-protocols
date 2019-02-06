@@ -1,4 +1,5 @@
 import pl from 'tau-prolog';
+
 import { format, translate } from './helper';
 
 class Dialogue {
@@ -32,16 +33,16 @@ class Dialogue {
     prologSession.query(term);
     prologSession.answer(x => {
       if (pl.format_answer(x) !== 'true ;') {
-        throw new Error(`Pre-conditions of ${agent.name} claiming "${translate(term)}" are not satisfied because \
-                      the agent cannot demonstrate the claim through their commitment store and/or knowledge base!`);
+        throw new Error(`Pre-conditions of ${agent.name} claiming "${translate(term)}" are not satisfied because ` +
+          `the agent cannot demonstrate the claim through their commitment store and/or knowledge base!`);
       }
     });
 
     // ¬l ∈ Com_ag_j for any ag_j ∈ Ag
     for (const anyAgent of this.agents) {
       if (anyAgent.commitmentStore.includes(term)) {
-        throw new Error(`Pre-conditions of ${agent.name} claiming "${translate(term)}" are not satisfied because \
-                        ${anyAgent.name}'s commitment store already contains the claim!`);
+        throw new Error(`Pre-conditions of ${agent.name} claiming "${translate(term)}" are not satisfied because ` +
+          `${anyAgent.name}'s commitment store already contains the claim!`);
       }
     }
 
@@ -66,8 +67,8 @@ class Dialogue {
     prologSession.query(term);
     prologSession.answer(x => {
       if (pl.format_answer(x) === 'true ;') {
-        throw new Error(`Pre-conditions of ${agent.name} asking why "${translate(term)}" are not satisfied because \
-                      the agent can already demonstrate the claim through their commitment store and/or knowledge base!`);
+        throw new Error(`Pre-conditions of ${agent.name} asking why "${translate(term)}" are not satisfied because ` +
+          `the agent can already demonstrate the claim through their commitment store and/or knowledge base!`);
       }
     });
 
@@ -81,8 +82,8 @@ class Dialogue {
     }
 
     if (doesAppear === false) {
-      throw new Error(`Pre-conditions of ${agent.name} asking why "${translate(term)}" are not satisfied because \
-                      no other agent's commitment store contains the claim!`);
+      throw new Error(`Pre-conditions of ${agent.name} asking why "${translate(term)}" are not satisfied because ` +
+        `no other agent's commitment store contains the claim!`);
     }
 
     /* UPDATE DIALOGUE TEXT AND SAVE COMMITMENT STORE HISTORY */
@@ -105,8 +106,8 @@ class Dialogue {
     }
 
     if (doesAppear === false) {
-      throw new Error(`Pre-conditions of ${agent.name} conceding to "${translate(term)}" are not satisfied because \
-                      no other agent's commitment store contains the claim!`);
+      throw new Error(`Pre-conditions of ${agent.name} conceding to "${translate(term)}" are not satisfied because ` +
+        `no other agent's commitment store contains the claim!`);
     }
 
     // not (¬l ∈ Com_ag_i )
@@ -136,15 +137,15 @@ class Dialogue {
     prologSession.query(term);
     prologSession.answer(x => {
       if (pl.format_answer(x) === 'true ;') {
-        throw new Error(`Pre-conditions of ${agent.name} retracting "${translate(term)}" are not satisfied because \
-                      the agent can still demonstrate the claim through their remaining commitment store and/or knowledge base!`);
+        throw new Error(`Pre-conditions of ${agent.name} retracting "${translate(term)}" are not satisfied because ` +
+          `the agent can still demonstrate the claim through their remaining commitment store and/or knowledge base!`);
       }
     });
 
     // l ∈ Com_ag_i
     if (!agent.commitmentStore.includes(term)) {
-      throw new Error(`Pre-conditions of ${agent.name} retracting "${translate(term)}" are not satisfied because \
-                      the agent's commitment store does not contain the claim!`);
+      throw new Error(`Pre-conditions of ${agent.name} retracting "${translate(term)}" are not satisfied because ` +
+        `the agent's commitment store does not contain the claim!`);
     }
 
     /* POST-CONDITIONS */
@@ -164,15 +165,15 @@ class Dialogue {
 
     // l ∈ Com_ag_i
     if (!agent.commitmentStore.includes(term)) {
-      throw new Error(`Pre-conditions of ${agent.name} offering reasoning for "${translate(term)}" are not satisfied because \
-                      the agent's commitment store does not contain the claim!`);
+      throw new Error(`Pre-conditions of ${agent.name} offering reasoning for "${translate(term)}" are not satisfied because ` +
+        `the agent's commitment store does not contain the claim!`);
     }
 
     // demo(􏰖∏ ∪ Com_ag_j, l) for some ∏ 􏰖⊆ ∏_􏰖ag_i
     for (const justification of justifications) {
       if (!agent.knowledgeBase.includes(justification)) {
-        throw new Error(`Pre-conditions of ${agent.name} offering reasoning for "${translate(term)}" are not satisfied because \
-                      the agent's knowledge base does not contain all justifications!`);
+        throw new Error(`Pre-conditions of ${agent.name} offering reasoning for "${translate(term)}" are not satisfied because ` +
+          `the agent's knowledge base does not contain all justifications!`);
       }
     }
 
@@ -188,8 +189,8 @@ class Dialogue {
 
     prologSession.answer(x => {
       if (pl.format_answer(x) !== 'true ;') {
-        throw new Error(`Pre-conditions of ${agent.name} offering reasoning for "${translate(term)}" are not satisfied because \
-                      ${otherAgent.name} cannot demonstrate the claim through the justifications and their commitment store!`);
+        throw new Error(`Pre-conditions of ${agent.name} offering reasoning for "${translate(term)}" are not satisfied because ` +
+          `${otherAgent.name} cannot demonstrate the claim through the justifications and their commitment store!`);
       }
     });
 
@@ -230,8 +231,8 @@ class Dialogue {
     // ∀(ag_j) ∈ Ag, l ∉ Com_ag_j
     for (const anyAgent of this.agents) {
       if (anyAgent.commitmentStore.includes(term)) {
-        throw new Error(`Pre-conditions of ${agent.name} questioning "${translate(term)}" are not satisfied because \
-                        ${anyAgent.name}'s commitment store contains the claim!`);
+        throw new Error(`Pre-conditions of ${agent.name} questioning "${translate(term)}" are not satisfied because ` +
+          `${anyAgent.name}'s commitment store contains the claim!`);
       }
     }
 
@@ -241,8 +242,8 @@ class Dialogue {
     prologSession.query(term);
     prologSession.answer(x => {
       if (pl.format_answer(x) === 'true ;') {
-        throw new Error(`Pre-conditions of ${agent.name} questioning "${translate(term)}" are not satisfied because \
-                      the agent can already demonstrate the claim through their commitment store and/or knowledge base!`);
+        throw new Error(`Pre-conditions of ${agent.name} questioning "${translate(term)}" are not satisfied because ` +
+          `the agent can already demonstrate the claim through their commitment store and/or knowledge base!`);
       }
     });
 
