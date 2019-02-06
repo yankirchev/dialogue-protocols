@@ -53,7 +53,7 @@ class Dialogue {
 
     /* UPDATE DIALOGUE TEXT AND SAVE COMMITMENT STORE HISTORY */
 
-    this.text += `${agent.name} claims that ${translate(term)}.\n`
+    this.text += `${agent.name}: ${translate(term)}.\n`
     this.saveCommitmentStores();
   }
 
@@ -88,7 +88,7 @@ class Dialogue {
 
     /* UPDATE DIALOGUE TEXT AND SAVE COMMITMENT STORE HISTORY */
 
-    this.text += `${agent.name} asks why is it that ${translate(term)}.\n`
+    this.text += `${agent.name}: Why is it that ${translate(term)}?\n`
     this.saveCommitmentStores();
   }
 
@@ -123,7 +123,7 @@ class Dialogue {
 
     /* UPDATE DIALOGUE TEXT AND SAVE COMMITMENT STORE HISTORY */
 
-    this.text += `${agent.name} concedes to the claim that ${translate(term)}.\n`
+    this.text += `${agent.name}: I accept that ${translate(term)}.\n`
     this.saveCommitmentStores();
   }
 
@@ -155,7 +155,7 @@ class Dialogue {
 
     /* UPDATE DIALOGUE TEXT AND SAVE COMMITMENT STORE HISTORY */
 
-    this.text += `${agent.name} retracts the claim that ${translate(term)}.\n`
+    this.text += `${agent.name}: I take back that ${translate(term)}.\n`
     this.saveCommitmentStores();
   }
 
@@ -220,7 +220,7 @@ class Dialogue {
       }
     }
 
-    this.text += `${agent.name} explains that ${translate(term)} since ${format(justifications.split('),'))}. \n`
+    this.text += `${agent.name}: ${translate(term)} since ${format(justifications.split('),'))}.\n`
     this.saveCommitmentStores();
   }
 
@@ -249,7 +249,7 @@ class Dialogue {
 
     /* UPDATE DIALOGUE TEXT AND SAVE COMMITMENT STORE HISTORY */
 
-    this.text += `${agent.name} questions if ${translate(term)}.\n`
+    this.text += `${agent.name}: I wonder if ${translate(term)}.\n`
     this.saveCommitmentStores();
   }
 }
