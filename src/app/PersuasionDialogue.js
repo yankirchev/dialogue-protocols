@@ -115,8 +115,100 @@ class PersuasionDialogue extends Dialogue {
     this.saveCommitmentStores();
   }
 
+  // Concede(ag_i, l) | Concede(O,p(a))
   concede(agent, term) {
+    /* GENERAL PRE-CONDITIONS */
 
+    // for some agent ag_j ≠ ag_i, l ∈ Com_ag_j
+    let doesAppear = false;
+
+    for (const someAgent of this.agents) {
+      if (someAgent !== agent && someAgent.commitmentStore.includes(term)) {
+        doesAppear = true;
+      }
+    }
+
+    if (doesAppear === false) {
+      throw new Error(`Pre-conditions of ${agent.name} conceding to "${translate(term)}" are not satisfied because ` +
+        `no other agent's commitment store contains the claim!`);
+    }
+
+    // not(¬l ∈ Com_ag_i )
+    if (term.includes('\\+(')) {
+      if (agent.commitmentStore.includes(`${term.substring(3, term.length - 2)}.`)) {
+        throw new Error(`Pre-conditions of ${agent.name} conceding to "${translate(term)}" are not satisfied because ` +
+          `the agent's commitment store already contains the negation of the claim!`);
+      }
+    } else {
+      if (agent.commitmentStore.includes(`\\+(${term.substring(0, term.length - 1)}).`)) {
+        throw new Error(`Pre-conditions of ${agent.name} conceding to "${translate(term)}" are not satisfied because ` +
+          `the agent's commitment store already contains the negation of the claim!`);
+      }
+    }
+
+    /* TYPE-SPECIFIC PRE-CONDITIONS */
+
+    if (agent !== this.proponent) {
+      // p(X) ∈ B, where B is the set of terms in the body of the preference rule of O
+      let termsToCheck = [];
+
+      for (const line of agent.knowledgeBase.split('\n')) {
+        if (new RegExp('^acceptableRestaurant\\(').test(line))
+          termsToCheck = termsToCheck.concat(line.match(/(?<=,|-|, \()([A-Za-z0-9])+(?=\()/g));
+      }
+
+      for (let i = 0; i < termsToCheck.length; i++) {
+        for (const line of agent.knowledgeBase.split('\n')) {
+          if (new RegExp('^' + termsToCheck[i] + '\\(').test(line))
+            termsToCheck = termsToCheck.concat(line.match(/(?<=,|-|, \()([A-Za-z0-9])+(?=\()/g));
+
+        }
+      }
+
+      if (!termsToCheck.includes(term.match(/([A-Za-z0-9_])+/g)[0])) {
+        throw new Error(`Pre-conditions of ${agent.name} questioning "${translate(term)}" are not satisfied because ` +
+          `the claim does not correspond to a feature in the body of the agent's preference rule!`);
+      }
+    }
+
+    /* GENERAL POST-CONDITIONS */
+
+    // Com_ag_i ⇒ Com_ag_i ∪ l
+    if (!agent.commitmentStore.includes(term)) {
+      agent.commitmentStore += `${term}\n`;
+    }
+
+    /* TYPE-SPECIFIC POST-CONDITIONS */
+
+    if (agent !== this.proponent) {
+      // Com_O ⇒ Com_O ∪ (p(X) ∈ B), where B is the set of terms in the body of the preference rule of O
+      let termsToAdd = [];
+
+      for (const line of (agent.knowledgeBase + agent.commitmentStore).split('\n')) {
+        if (new RegExp('^' + term.match(/([A-Za-z0-9_])+/g)[0] + '\\(').test(line)) {
+          if (!agent.commitmentStore.includes(line))
+            agent.commitmentStore += `${line}\n`;
+
+          termsToAdd = termsToAdd.concat(line.match(/(?<=,|-|, \()([A-Za-z0-9])+(?=\()/g));
+        }
+      }
+
+      for (let i = 0; i < termsToAdd.length; i++) {
+        for (const line of agent.knowledgeBase.split('\n')) {
+          if (new RegExp('^' + termsToAdd[i] + '\\(').test(line)) {
+            termsToAdd = termsToAdd.concat(line.match(/(?<=,|-|, \()([A-Za-z0-9])+(?=\()/g));
+
+            if (!agent.commitmentStore.includes(line))
+              agent.commitmentStore += `${line}\n`;
+          }
+        }
+      }
+    }
+
+    /* UPDATE DIALOGUE TEXT AND SAVE COMMITMENT STORE HISTORY */
+
+    this.text += `${agent.name}: I accept that ${translate(term)}.\n`
+    this.saveCommitmentStores();
   }
 
   // Question(ag_i, l) | Question(O,p(a))
