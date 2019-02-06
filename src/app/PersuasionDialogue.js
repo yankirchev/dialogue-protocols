@@ -4,10 +4,10 @@ import Dialogue from './Dialogue';
 import { decamelise, translate } from './helper';
 
 class PersuasionDialogue extends Dialogue {
-  constructor(agents) {
+  constructor(agents, indexOfProponent) {
     super(agents);
 
-    this.proponent = this.agents[1];
+    this.proponent = agents[indexOfProponent];
   }
 
   // Claim(ag_i, l)
@@ -35,41 +35,39 @@ class PersuasionDialogue extends Dialogue {
 
     /*  TYPE-SPECIFIC PRE-CONDITIONS */
 
-    if (agent === this.proponent) {
-      return;
-    }
+    if (agent !== this.proponent) {
+      const atom = term.match(/([A-Za-z0-9_])+/g)[1];
+      const predicate = term.match(/([A-Za-z0-9_])+/g)[0];
 
-    // demo(∏_􏰖O ∪ Com_O, acceptableRestaurant(a))
-    const atom = term.match(/([A-Za-z0-9_])+/g)[1];
-    const predicate = term.match(/([A-Za-z0-9_])+/g)[0];
+      // demo(∏_􏰖O ∪ Com_O, acceptableRestaurant(a))
+      prologSession.query(`acceptableRestaurant(${atom}).`);
+      prologSession.answer(x => {
+        if (pl.format_answer(x) !== 'true ;') {
+          throw new Error(`Pre-conditions of ${agent.name} claiming "${translate(term)}" are not satisfied because ` +
+            `the agent cannot demonstrate that ${decamelise(atom)} is an acceptable choice through their commitment store and/or knowledge base!`);
+        }
+      });
 
-    prologSession.query(`acceptableRestaurant(${atom}).`);
-    prologSession.answer(x => {
-      if (pl.format_answer(x) !== 'true ;') {
-        throw new Error(`Pre-conditions of ${agent.name} claiming "${translate(term)}" are not satisfied because ` +
-          `the agent cannot demonstrate that ${decamelise(atom)} is an acceptable choice through their commitment store and/or knowledge base!`);
-      }
-    });
+      // p(X) ∈ B, where B is the set of terms in the body of the preference rule of O
+      let termsToCheck = [];
 
-    // p(X) ∈ B, where B is the set of terms in the body of the preference rule of O
-    let termsToCheck = [];
-
-    for (const line of agent.knowledgeBase.split('\n')) {
-      if (new RegExp('^acceptableRestaurant\\(').test(line))
-        termsToCheck = termsToCheck.concat(line.match(/(?<=,|-|, \()([A-Za-z0-9])+(?=\()/g));
-    }
-
-    for (let i = 0; i < termsToCheck.length; i++) {
       for (const line of agent.knowledgeBase.split('\n')) {
-        if (new RegExp('^' + termsToCheck[i] + '\\(').test(line))
+        if (new RegExp('^acceptableRestaurant\\(').test(line))
           termsToCheck = termsToCheck.concat(line.match(/(?<=,|-|, \()([A-Za-z0-9])+(?=\()/g));
-
       }
-    }
 
-    if (!termsToCheck.includes(predicate)) {
-      throw new Error(`Pre-conditions of ${agent.name} claiming "${translate(term)}" are not satisfied because ` +
-        `the claim does not correspond to a feature in the body of the agent's preference rule!`);
+      for (let i = 0; i < termsToCheck.length; i++) {
+        for (const line of agent.knowledgeBase.split('\n')) {
+          if (new RegExp('^' + termsToCheck[i] + '\\(').test(line))
+            termsToCheck = termsToCheck.concat(line.match(/(?<=,|-|, \()([A-Za-z0-9])+(?=\()/g));
+
+        }
+      }
+
+      if (!termsToCheck.includes(predicate)) {
+        throw new Error(`Pre-conditions of ${agent.name} claiming "${translate(term)}" are not satisfied because ` +
+          `the claim does not correspond to a feature in the body of the agent's preference rule!`);
+      }
     }
 
     /* GENERAL POST-CONDITIONS */
@@ -79,29 +77,34 @@ class PersuasionDialogue extends Dialogue {
 
     /* TYPE-SPECIFIC POST-CONDITIONS */
 
-    // Com_O ⇒ Com_O ∪ acceptableRestaurant(a)
-    if (!agent.commitmentStore.includes(`acceptableRestaurant(${atom}).`))
-      agent.commitmentStore += `acceptableRestaurant(${atom}).\n`;
+    if (agent !== this.proponent) {
+      const atom = term.match(/([A-Za-z0-9_])+/g)[1];
+      const predicate = term.match(/([A-Za-z0-9_])+/g)[0];
 
-    // Com_O ⇒ Com_O ∪ (p(X) ∈ B), where B is the set of terms in the body of the preference rule of O
-    let termsToAdd = [];
+      // Com_O ⇒ Com_O ∪ acceptableRestaurant(a)
+      if (!agent.commitmentStore.includes(`acceptableRestaurant(${atom}).`))
+        agent.commitmentStore += `acceptableRestaurant(${atom}).\n`;
 
-    for (const line of (agent.knowledgeBase + agent.commitmentStore).split('\n')) {
-      if (new RegExp('^' + predicate + '\\(').test(line)) {
-        if (!agent.commitmentStore.includes(line))
-          agent.commitmentStore += `${line}\n`;
+      // Com_O ⇒ Com_O ∪ (p(X) ∈ B), where B is the set of terms in the body of the preference rule of O
+      let termsToAdd = [];
 
-        termsToAdd = termsToAdd.concat(line.match(/(?<=,|-|, \()([A-Za-z0-9])+(?=\()/g));
-      }
-    }
-
-    for (let i = 0; i < termsToAdd.length; i++) {
-      for (const line of agent.knowledgeBase.split('\n')) {
-        if (new RegExp('^' + termsToAdd[i] + '\\(').test(line)) {
-          termsToAdd = termsToAdd.concat(line.match(/(?<=,|-|, \()([A-Za-z0-9])+(?=\()/g));
-
+      for (const line of (agent.knowledgeBase + agent.commitmentStore).split('\n')) {
+        if (new RegExp('^' + predicate + '\\(').test(line)) {
           if (!agent.commitmentStore.includes(line))
             agent.commitmentStore += `${line}\n`;
+
+          termsToAdd = termsToAdd.concat(line.match(/(?<=,|-|, \()([A-Za-z0-9])+(?=\()/g));
+        }
+      }
+
+      for (let i = 0; i < termsToAdd.length; i++) {
+        for (const line of agent.knowledgeBase.split('\n')) {
+          if (new RegExp('^' + termsToAdd[i] + '\\(').test(line)) {
+            termsToAdd = termsToAdd.concat(line.match(/(?<=,|-|, \()([A-Za-z0-9])+(?=\()/g));
+
+            if (!agent.commitmentStore.includes(line))
+              agent.commitmentStore += `${line}\n`;
+          }
         }
       }
     }
