@@ -27,7 +27,7 @@ class Dialogue {
   claim(agent, term) {
     /*  PRE-CONDITIONS */
 
-    // demo(∏_􏰖ag_i ∪ Com_ag_i, l)
+    // demo(∏_ag_i ∪ Com_ag_i, l)
     const prologSession = pl.create();
     prologSession.consult(agent.knowledgeBase + agent.commitmentStore);
     prologSession.query(term);
@@ -61,7 +61,7 @@ class Dialogue {
   why(agent, term) {
     /*  PRE-CONDITIONS */
 
-    // not demo(∏_􏰖ag_i ∪ Com_ag_i, l)
+    // not demo(∏_ag_i ∪ Com_ag_i, l)
     const prologSession = pl.create();
     prologSession.consult(agent.knowledgeBase + agent.commitmentStore);
     prologSession.query(term);
@@ -140,7 +140,7 @@ class Dialogue {
   retract(agent, term) {
     /* PRE-CONDITIONS */
 
-    // not demo(􏰖∏_ag_i ∪ Com_ag_i \ l, l)
+    // not demo(∏_ag_i ∪ Com_ag_i \ l, l)
     const prologSession = pl.create();
     prologSession.consult(agent.knowledgeBase + agent.commitmentStore.replace(term, ''));
     prologSession.query(term);
@@ -168,7 +168,7 @@ class Dialogue {
     this.saveCommitmentStores();
   }
 
-  // Since(ag_i, l, ∏􏰖)
+  // Since(ag_i, l, ∏)
   since(agent, otherAgent, term, justifications) {
     /* PRE-CONDITIONS */
 
@@ -178,7 +178,7 @@ class Dialogue {
         `the agent's commitment store does not contain the claim!`);
     }
 
-    // demo(􏰖∏ ∪ Com_ag_j, l) for some ∏ 􏰖⊆ ∏_􏰖ag_i
+    // demo(∏ ∪ Com_ag_j, l) for some ∏ ⊆ ∏_ag_i
     for (const justification of justifications) {
       if (!agent.knowledgeBase.includes(justification)) {
         throw new Error(`Pre-conditions of ${agent.name} offering reasoning for "${translate(term)}" are not satisfied because ` +
@@ -195,7 +195,6 @@ class Dialogue {
     const prologSession = pl.create();
     prologSession.consult(justificationsInPrologFormat + otherAgent.commitmentStore);
     prologSession.query(term);
-
     prologSession.answer(x => {
       if (pl.format_answer(x) !== 'true ;') {
         throw new Error(`Pre-conditions of ${agent.name} offering reasoning for "${translate(term)}" are not satisfied because ` +
@@ -205,14 +204,14 @@ class Dialogue {
 
     /* POST-CONDITIONS */
 
-    // Com_ag_i ⇒ Com_ag_i ∪ ∏ 􏰖
+    // Com_ag_i ⇒ Com_ag_i ∪ ∏
     for (const justification of justifications) {
       if (!agent.commitmentStore.includes(justification)) {
         agent.commitmentStore += `${justification}\n`;
       }
     }
 
-    // Com_ag_j ⇒ Com_ag_j ∪ ∏ 􏰖
+    // Com_ag_j ⇒ Com_ag_j ∪ ∏
     for (const justification of justifications) {
       if (!otherAgent.commitmentStore.includes(justification)) {
         otherAgent.commitmentStore += `${justification}\n`;
@@ -253,7 +252,7 @@ class Dialogue {
       }
     }
 
-    // not demo(∏_􏰖ag_i ∪ Com_ag_i, l)
+    // not demo(∏_ag_i ∪ Com_ag_i, l)
     const prologSession = pl.create();
     prologSession.consult(agent.knowledgeBase + agent.commitmentStore);
     prologSession.query(term);

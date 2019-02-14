@@ -14,7 +14,7 @@ class PersuasionDialogue extends Dialogue {
   claim(agent, term) {
     /* GENERAL PRE-CONDITIONS */
 
-    // demo(∏_􏰖ag_i ∪ Com_ag_i, l)
+    // demo(∏_ag_i ∪ Com_ag_i, l)
     const prologSession = pl.create();
     prologSession.consult(agent.knowledgeBase + agent.commitmentStore);
     prologSession.query(term);
@@ -39,7 +39,7 @@ class PersuasionDialogue extends Dialogue {
       const atom = term.match(/([A-Za-z0-9_])+/g)[1];
       const predicate = term.match(/([A-Za-z0-9_])+/g)[0];
 
-      // demo(∏_􏰖O ∪ Com_O, acceptableRestaurant(a))
+      // demo(∏_O ∪ Com_O, acceptableRestaurant(a))
       prologSession.query(`acceptableRestaurant(${atom}).`);
       prologSession.answer(x => {
         if (pl.format_answer(x) !== 'true ;') {
@@ -223,7 +223,7 @@ class PersuasionDialogue extends Dialogue {
       }
     }
 
-    // not(demo(∏_􏰖ag_i ∪ Com_ag_i, l))
+    // not(demo(∏_ag_i ∪ Com_ag_i, l))
     const prologSession = pl.create();
     prologSession.consult(agent.knowledgeBase + agent.commitmentStore);
     prologSession.query(term);
