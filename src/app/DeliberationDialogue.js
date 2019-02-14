@@ -108,8 +108,131 @@ class DeliberationDialogue extends Dialogue {
     this.saveCommitmentStores();
   }
 
-  since(agent, otherAgent, term, justification) {
+  // Since(ag_i, l, ∏) | Since(O, g(a), p(a))
+  since(agent, otherAgent, term, justifications) {
+    /* GENERAL PRE-CONDITIONS */
 
+    // l ∈ Com_ag_i
+    if (!agent.commitmentStore.includes(term)) {
+      throw new Error(`Pre-conditions of ${agent.name} offering reasoning for "${translate(term)}" are not satisfied because ` +
+        `the agent's commitment store does not contain the claim!`);
+    }
+
+    // demo(∏ ∪ Com_ag_j, l) for some ∏ ⊆ ∏_ag_i
+    for (const justification of justifications) {
+      if (!agent.knowledgeBase.includes(justification)) {
+        throw new Error(`Pre-conditions of ${agent.name} offering reasoning for "${translate(term)}" are not satisfied because ` +
+          `the agent's knowledge base does not contain all justifications!`);
+      }
+    }
+
+    let justificationsInPrologFormat = '';
+
+    for (const justification of justifications) {
+      justificationsInPrologFormat += `${justification}\n`;
+    }
+
+    const prologSession = pl.create();
+    prologSession.consult(justificationsInPrologFormat + otherAgent.commitmentStore);
+    prologSession.query(term);
+    prologSession.answer(x => {
+      if (pl.format_answer(x) !== 'true ;') {
+        throw new Error(`Pre-conditions of ${agent.name} offering reasoning for "${translate(term)}" are not satisfied because ` +
+          `${otherAgent.name} cannot demonstrate the claim through the justifications and their commitment store!`);
+      }
+    });
+
+    /* TYPE-SPECIFIC PRE-CONDITIONS */
+
+    const atom = term.match(/([A-Za-z0-9_])+/g)[1];
+    const predicate = term.match(/([A-Za-z0-9_])+/g)[0];
+
+    // demo(ag_i ∪ Com_ag_i ∪ p(a), g(a))
+    prologSession.consult(agent.knowledgeBase + agent.commitmentStore + term);
+    prologSession.query(`acceptableRestaurant(${atom}).`);
+    prologSession.answer(x => {
+      if (pl.format_answer(x) !== 'true ;') {
+        throw new Error(`Pre-conditions of ${agent.name} offering reasoning for "${translate(term)}" are not satisfied because ` +
+          `the agent cannot demonstrate that ${decamelise(atom)} is an acceptable choice through their commitment store and/or knowledge base together with the claim!`);
+      }
+    });
+
+    // p(a) ∈ Com_ag_j for some ag_j ≠ ag_i
+    let doesAppear = false;
+
+    for (const someAgent of this.agents) {
+      if (someAgent !== agent && someAgent.commitmentStore.includes(term)) {
+        doesAppear = true;
+      }
+    }
+
+    if (doesAppear === false) {
+      throw new Error(`Pre-conditions of ${agent.name} offering reasoning for "${translate(term)}" are not satisfied because ` +
+        `no other agent's commitment store contains the claim!`);
+    }
+
+    /* GENERAL POST-CONDITIONS */
+
+    // Com_ag_i ⇒ Com_ag_i ∪ ∏
+    for (const justification of justifications) {
+      if (!agent.commitmentStore.includes(justification)) {
+        agent.commitmentStore += `${justification}\n`;
+      }
+    }
+
+    // Com_ag_j ⇒ Com_ag_j ∪ ∏
+    for (const justification of justifications) {
+      if (!otherAgent.commitmentStore.includes(justification)) {
+        otherAgent.commitmentStore += `${justification}\n`;
+      }
+    }
+
+    /* TYPE-SPECIFIC POST-CONDITIONS */
+
+    // Com_O ⇒ Com_O ∪ p(X) ∈ B, where B is the set of terms in the body of the agreed preference rule
+
+    let termsToAdd = [];
+
+    for (const line of (agent.knowledgeBase + agent.commitmentStore).split('\n')) {
+      if (new RegExp('^' + term.match(/([A-Za-z0-9_])+/g)[0] + '\\(').test(line)) {
+        if (!agent.commitmentStore.includes(line))
+          agent.commitmentStore += `${line}\n`;
+
+        termsToAdd = termsToAdd.concat(line.match(/(?<=,|-|, \()([A-Za-z0-9])+(?=\()/g));
+      }
+    }
+
+    for (let i = 0; i < termsToAdd.length; i++) {
+      for (const line of agent.knowledgeBase.split('\n')) {
+        if (new RegExp('^' + termsToAdd[i] + '\\(').test(line)) {
+          termsToAdd = termsToAdd.concat(line.match(/(?<=,|-|, \()([A-Za-z0-9])+(?=\()/g));
+
+          if (!agent.commitmentStore.includes(line))
+            agent.commitmentStore += `${line}\n`;
+        }
+      }
+    }
+
+    /* UPDATE DIALOGUE TEXT AND SAVE COMMITMENT STORE HISTORY */
+
+    justifications = justifications[0].split('-')[1].split(', ')[0].replace(/X/g, term.match(/([A-Za-z0-9])+/g)[1]);
+
+    for (const match of justifications.match(/([A-Za-z0-9])+/g)) {
+      if (match[0] !== match[0].toLowerCase()) {
+        const prologSession = pl.create();
+        prologSession.consult(agent.knowledgeBase + agent.commitmentStore);
+
+        if (justifications[justifications.length - 1] !== '.' && justifications[justifications.length - 2] !== '.') {
+          justifications = justifications + '.'
+        }
+
+        prologSession.query(justifications);
+        prologSession.answer(x => justifications = justifications.replace(match, pl.format_answer(x).split(" ")[2].replace(/,|\./g, '')));
+      }
+    }
+
+    this.text += `${agent.name}: ${translate(term)} since ${format(justifications.split('),'))}.\n`
+    this.saveCommitmentStores();
   }
 
   // Concede(ag_i, l) | Concede(O, p(a))
@@ -145,10 +268,7 @@ class DeliberationDialogue extends Dialogue {
 
     /* ADD TERM TO BODY OF AGREED PREFERENCE RULE */
 
-    const atom = term.match(/([A-Za-z0-9_])+/g)[1];
-    const predicate = term.match(/([A-Za-z0-9_])+/g)[0];
-
-    this.agreedPreferenceRule = `${this.agreedPreferenceRule.substring(0, this.agreedPreferenceRule.length - 1)},${term.replace(atom, 'X')}.`;
+    this.agreedPreferenceRule = `${this.agreedPreferenceRule.substring(0, this.agreedPreferenceRule.length - 1)},${term.replace(term.match(/([A-Za-z0-9_])+/g)[1], 'X')}.`;
 
     /* GENERAL POST-CONDITIONS */
 
@@ -164,7 +284,7 @@ class DeliberationDialogue extends Dialogue {
     let termsToAdd = [];
 
     for (const line of (agent.knowledgeBase + agent.commitmentStore).split('\n')) {
-      if (new RegExp('^' + predicate + '\\(').test(line)) {
+      if (new RegExp('^' + term.match(/([A-Za-z0-9_])+/g)[0] + '\\(').test(line)) {
         if (!agent.commitmentStore.includes(line))
           agent.commitmentStore += `${line}\n`;
 
