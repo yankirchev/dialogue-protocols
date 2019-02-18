@@ -133,17 +133,13 @@ class PersuasionDialogue extends Dialogue {
         `no other agent's commitment store contains the claim!`);
     }
 
-    // not(¬l ∈ Com_ag_i )
-    if (term.includes('\\+(')) {
-      if (agent.commitmentStore.includes(`${term.substring(3, term.length - 2)}.`)) {
-        throw new Error(`Pre-conditions of ${agent.name} conceding to "${translate(term)}" are not satisfied because ` +
-          `the agent's commitment store already contains the negation of the claim!`);
-      }
-    } else {
-      if (agent.commitmentStore.includes(`\\+(${term.substring(0, term.length - 1)}).`)) {
-        throw new Error(`Pre-conditions of ${agent.name} conceding to "${translate(term)}" are not satisfied because ` +
-          `the agent's commitment store already contains the negation of the claim!`);
-      }
+    // not(¬l ∈ Com_ag_i)
+    if (term.includes('\\+(') && (agent.commitmentStore.includes(`${term.substring(3, term.length - 2)}.`))) {
+      throw new Error(`Pre-conditions of ${agent.name} conceding to "${translate(term)}" are not satisfied because ` +
+        `the agent's commitment store contains the negation of the claim!`);
+    } else if (agent.commitmentStore.includes(`\\+(${term.substring(0, term.length - 1)}).`)) {
+      throw new Error(`Pre-conditions of ${agent.name} conceding to "${translate(term)}" are not satisfied because ` +
+        `the agent's commitment store contains the negation of the claim!`);
     }
 
     /* TYPE-SPECIFIC PRE-CONDITIONS */
