@@ -1,7 +1,7 @@
 import pl from 'tau-prolog';
 
 import Dialogue from './Dialogue';
-import { decamelise, translate } from './helper';
+import { translate } from './helper';
 
 class PersuasionDialogue extends Dialogue {
   constructor(agents, indexOfProponent) {
@@ -21,7 +21,7 @@ class PersuasionDialogue extends Dialogue {
     prologSession.answer(x => {
       if (pl.format_answer(x) !== 'true ;') {
         throw new Error(`Pre-conditions of ${agent.name} claiming "${translate(term)}" are not satisfied because ` +
-          `the agent cannot demonstrate the claim through their commitment store and/or knowledge base!`);
+          `the agent cannot demonstrate the claim through their knowledge base and/or commitment store!`);
       }
     });
 
@@ -29,7 +29,7 @@ class PersuasionDialogue extends Dialogue {
     for (const anyAgent of this.agents) {
       if (anyAgent.commitmentStore.includes(term)) {
         throw new Error(`Pre-conditions of ${agent.name} claiming "${translate(term)}" are not satisfied because ` +
-          `${anyAgent.name}'s commitment store already contains the claim!`);
+          `${anyAgent.name}'s commitment store contains the claim!`);
       }
     }
 
@@ -44,7 +44,7 @@ class PersuasionDialogue extends Dialogue {
       prologSession.answer(x => {
         if (pl.format_answer(x) !== 'true ;') {
           throw new Error(`Pre-conditions of ${agent.name} claiming "${translate(term)}" are not satisfied because ` +
-            `the agent cannot demonstrate that ${decamelise(atom)} is an acceptable choice through their commitment store and/or knowledge base!`);
+            `the agent cannot demonstrate "${translate(`acceptableRestaurant(${atom}).`)}" through their knowledge base and/or commitment store!`);
         }
       });
 
@@ -115,7 +115,7 @@ class PersuasionDialogue extends Dialogue {
     this.saveCommitmentStores();
   }
 
-  // Concede(ag_i, l) | Concede(O,p(a))
+  // Concede(ag_i, l) | Concede(O, p(a))
   concede(agent, term) {
     /* GENERAL PRE-CONDITIONS */
 
@@ -214,19 +214,19 @@ class PersuasionDialogue extends Dialogue {
     // ∀(ag_j) ∈ Ag, l ∉ Com_ag_j
     for (const anyAgent of this.agents) {
       if (anyAgent.commitmentStore.includes(term)) {
-        throw new Error(`Pre-conditions of ${agent.name} questioning "${translate(term)}" are not satisfied because ` +
+        throw new Error(`Pre-conditions of ${agent.name} questioning if "${translate(term)}" are not satisfied because ` +
           `${anyAgent.name}'s commitment store contains the claim!`);
       }
     }
 
-    // not(demo(∏_ag_i ∪ Com_ag_i, l))
+    // not demo(∏_ag_i ∪ Com_ag_i, l)
     const prologSession = pl.create();
     prologSession.consult(agent.knowledgeBase + agent.commitmentStore);
     prologSession.query(term);
     prologSession.answer(x => {
       if (pl.format_answer(x) === 'true ;') {
-        throw new Error(`Pre-conditions of ${agent.name} questioning "${translate(term)}" are not satisfied because ` +
-          `the agent can already demonstrate the claim through their commitment store and/or knowledge base!`);
+        throw new Error(`Pre-conditions of ${agent.name} questioning if "${translate(term)}" are not satisfied because ` +
+          `the agent can demonstrate the claim through their knowledge base and/or commitment store!`);
       }
     });
 

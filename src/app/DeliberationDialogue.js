@@ -1,7 +1,7 @@
 import pl from 'tau-prolog';
 
 import Dialogue from './Dialogue';
-import { decamelise, format, translate } from './helper';
+import { format, translate } from './helper';
 
 class DeliberationDialogue extends Dialogue {
   constructor(agents) {
@@ -21,7 +21,7 @@ class DeliberationDialogue extends Dialogue {
     prologSession.answer(x => {
       if (pl.format_answer(x) !== 'true ;') {
         throw new Error(`Pre-conditions of ${agent.name} claiming "${translate(term)}" are not satisfied because ` +
-          `the agent cannot demonstrate the claim through their commitment store and/or knowledge base!`);
+          `the agent cannot demonstrate the claim through their knowledge base and/or commitment store!`);
       }
     });
 
@@ -29,7 +29,7 @@ class DeliberationDialogue extends Dialogue {
     for (const anyAgent of this.agents) {
       if (anyAgent.commitmentStore.includes(term)) {
         throw new Error(`Pre-conditions of ${agent.name} claiming "${translate(term)}" are not satisfied because ` +
-          `${anyAgent.name}'s commitment store already contains the claim!`);
+          `${anyAgent.name}'s commitment store contains the claim!`);
       }
     }
 
@@ -43,7 +43,7 @@ class DeliberationDialogue extends Dialogue {
     prologSession.answer(x => {
       if (pl.format_answer(x) !== 'true ;') {
         throw new Error(`Pre-conditions of ${agent.name} claiming "${translate(term)}" are not satisfied because ` +
-          `the agent cannot demonstrate that ${decamelise(atom)} is an acceptable choice through their commitment store and/or knowledge base!`);
+          `the agent cannot demonstrate "${translate(`acceptableRestaurant(${atom}).`)}" through their knowledge base and/or commitment store!`);
       }
     });
 
