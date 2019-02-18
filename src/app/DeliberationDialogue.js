@@ -7,7 +7,7 @@ class DeliberationDialogue extends Dialogue {
   constructor(agents) {
     super(agents);
 
-    this.agreedPreferenceRule = 'acceptableRestaurant(X):-.';
+    this.agreedPreferenceRule = 'acceptableRestaurant(X):-';
   }
 
   // Claim(ag_i, l) | Claim(O, p(a))
@@ -169,17 +169,29 @@ class DeliberationDialogue extends Dialogue {
     });
 
     // p(a) ∈ Com_ag_j for some ag_j ≠ ag_i
-    let doesAppear = false;
+    let doesAppearGlobally = false;
 
     for (const someAgent of this.agents) {
-      if (someAgent !== agent && someAgent.commitmentStore.includes(term)) {
-        doesAppear = true;
+      let doesAppearLocally = true;
+
+      for (const justification of justifications) {
+        if (someAgent !== agent && !someAgent.commitmentStore.includes(justification))
+          doesAppearLocally = false;
       }
+
+      if (doesAppearLocally === true)
+        doesAppearGlobally = true;
     }
 
-    if (doesAppear === false) {
+    if (doesAppearGlobally === false) {
       throw new Error(`Pre-conditions of ${agent.name} offering reasoning for "${translate(term)}" are not satisfied because ` +
-        `no other agent's commitment store contains the claim!`);
+        `no other agent's commitment store contains the justifications!`);
+    }
+
+    /* ADD JUSTIFICATIONS TO BODY OF AGREED PREFERENCE RULE */
+
+    for (const justification of justifications) {
+      this.agreedPreferenceRule += `${justification.substring(0, justification.length - 1).replace(justification.match(/([A-Za-z0-9_])+/g)[1], 'X')},`;
     }
 
     /* GENERAL POST-CONDITIONS */
@@ -281,7 +293,7 @@ class DeliberationDialogue extends Dialogue {
 
     /* ADD TERM TO BODY OF AGREED PREFERENCE RULE */
 
-    this.agreedPreferenceRule = `${this.agreedPreferenceRule.substring(0, this.agreedPreferenceRule.length - 1)},${term.replace(term.match(/([A-Za-z0-9_])+/g)[1], 'X')}.`;
+    this.agreedPreferenceRule += `${term.substring(0, term.length - 1).replace(term.match(/([A-Za-z0-9_])+/g)[1], 'X')},`;
 
     /* GENERAL POST-CONDITIONS */
 
