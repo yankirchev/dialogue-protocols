@@ -35,12 +35,20 @@ function format(justifications) {
 }
 
 function translate(term) {
-  let translation = `${decamelise(term.match(/([A-Za-z0-9_])+/g)[1])} has property ${decamelise(term.match(/([A-Za-z0-9])+/g)[0])}`;
+  let translation = '';
 
-  if (term.match(/([A-Za-z0-9])+/g)[2] && term.match(/([A-Za-z0-9])+/g)[2] !== '_')
-    translation += ` of value ${term.match(/([A-Za-z0-9])+/g)[2]}`;
-  if (term.match(/([A-Za-z0-9])+/g)[3] && term.match(/([A-Za-z0-9])+/g)[3] !== '_')
-    translation += ` and cost ${term.match(/([A-Za-z0-9])+/g)[3]}`;
+  if (term.includes('\\+('))
+    translation = `${decamelise(term.match(/([A-Za-z0-9_])+/g)[1])} lacks property ${decamelise(term.match(/([A-Za-z0-9])+/g)[0])}`;
+  else
+    translation = `${decamelise(term.match(/([A-Za-z0-9_])+/g)[1])} has property ${decamelise(term.match(/([A-Za-z0-9])+/g)[0])}`;
+
+  if (term.match(/([A-Za-z0-9_])+/g)[2] && term.match(/([A-Za-z0-9_])+/g)[2] !== '_') {
+    translation += ` of value ${term.match(/([A-Za-z0-9_])+/g)[2]}`;
+
+    if (term.match(/([A-Za-z0-9_])+/g)[3] && term.match(/([A-Za-z0-9_])+/g)[3] !== '_')
+      translation += ` and cost ${term.match(/([A-Za-z0-9_])+/g)[3]}`;
+  } else if (term.match(/([A-Za-z0-9_])+/g)[3] && term.match(/([A-Za-z0-9_])+/g)[3] !== '_')
+    translation += ` of cost ${term.match(/([A-Za-z0-9_])+/g)[3]}`;
 
   return translation;
 }
