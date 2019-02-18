@@ -51,15 +51,24 @@ class DeliberationDialogue extends Dialogue {
     let termsToCheck = [];
 
     for (const line of agent.knowledgeBase.split('\n')) {
-      if (new RegExp('^acceptableRestaurant\\(').test(line))
-        termsToCheck = termsToCheck.concat(line.match(/(?<=,|-|, \()([A-Za-z0-9])+(?=\()/g));
+      if (/^acceptableRestaurant\(X/.test(line)) {
+        for (const match of line.match(/(?<=,|-|, \()([A-Za-z0-9])+(?=\()/g)) {
+          if (!termsToCheck.includes(match)) {
+            termsToCheck.push(match);
+          }
+        }
+      }
     }
 
     for (let i = 0; i < termsToCheck.length; i++) {
       for (const line of agent.knowledgeBase.split('\n')) {
-        if (new RegExp('^' + termsToCheck[i] + '\\(').test(line))
-          termsToCheck = termsToCheck.concat(line.match(/(?<=,|-|, \()([A-Za-z0-9])+(?=\()/g));
-
+        if (new RegExp('^' + termsToCheck[i] + '\\(X').test(line)) {
+          for (const match of line.match(/(?<=,|-|, \()([A-Za-z0-9])+(?=\()/g)) {
+            if (!termsToCheck.includes(match)) {
+              termsToCheck.push(match);
+            }
+          }
+        }
       }
     }
 
@@ -83,7 +92,7 @@ class DeliberationDialogue extends Dialogue {
     let termsToAdd = [];
 
     for (const line of (agent.knowledgeBase + agent.commitmentStore).split('\n')) {
-      if (new RegExp('^' + predicate + '\\(').test(line)) {
+      if (new RegExp('^' + predicate + '\\(X(?=\\)|,[A-Z]|,' + term.match(/([A-Za-z0-9_])+/g)[2] + ')').test(line)) {
         if (!agent.commitmentStore.includes(line))
           agent.commitmentStore += `${line}\n`;
 
@@ -94,10 +103,15 @@ class DeliberationDialogue extends Dialogue {
     for (let i = 0; i < termsToAdd.length; i++) {
       for (const line of agent.knowledgeBase.split('\n')) {
         if (new RegExp('^' + termsToAdd[i] + '\\(').test(line)) {
-          termsToAdd = termsToAdd.concat(line.match(/(?<=,|-|, \()([A-Za-z0-9])+(?=\()/g));
+          if (line.match(/(?<=,|-|, \()([A-Za-z0-9])+(?=\()/g)) {
+            for (const match of line.match(/(?<=,|-|, \()([A-Za-z0-9])+(?=\()/g)) {
+              if (!termsToAdd.includes(match))
+                termsToAdd.push(match);
+            }
+          }
 
-          if (!agent.commitmentStore.includes(line))
-            agent.commitmentStore += `${line}\n`;
+          if (!agent.commitmentDependencies.includes(line))
+            agent.commitmentDependencies += `${line}\n`;
         }
       }
     }
@@ -133,7 +147,7 @@ class DeliberationDialogue extends Dialogue {
     }
 
     const prologSession = pl.create();
-    prologSession.consult(justificationsInPrologFormat + otherAgent.commitmentStore);
+    prologSession.consult(justificationsInPrologFormat + otherAgent.commitmentStore + otherAgent.commitmentDependencies);
     prologSession.query(term);
     prologSession.answer(x => {
       if (pl.format_answer(x) !== 'true ;') {
@@ -144,16 +158,13 @@ class DeliberationDialogue extends Dialogue {
 
     /* TYPE-SPECIFIC PRE-CONDITIONS */
 
-    const atom = term.match(/([A-Za-z0-9_])+/g)[1];
-    const predicate = term.match(/([A-Za-z0-9_])+/g)[0];
-
-    // demo(ag_i ∪ Com_ag_i ∪ p(a), g(a))
-    prologSession.consult(agent.knowledgeBase + agent.commitmentStore + term);
-    prologSession.query(`acceptableRestaurant(${atom}).`);
+    // demo(∏_ag_i ∪ Com_ag_i ∪ p(a), g(a))
+    prologSession.consult(agent.knowledgeBase + agent.commitmentStore + justificationsInPrologFormat);
+    prologSession.query(term);
     prologSession.answer(x => {
       if (pl.format_answer(x) !== 'true ;') {
         throw new Error(`Pre-conditions of ${agent.name} offering reasoning for "${translate(term)}" are not satisfied because ` +
-          `the agent cannot demonstrate that ${decamelise(atom)} is an acceptable choice through their commitment store and/or knowledge base together with the claim!`);
+          `the agent cannot demonstrate the claim through their knowledge base, commitment store, and/or the justifications!`);
       }
     });
 
@@ -190,25 +201,31 @@ class DeliberationDialogue extends Dialogue {
     /* TYPE-SPECIFIC POST-CONDITIONS */
 
     // Com_O ⇒ Com_O ∪ p(X) ∈ B, where B is the set of terms in the body of the agreed preference rule
+    for (const justification of justifications) {
+      let termsToAdd = [];
 
-    let termsToAdd = [];
-
-    for (const line of (agent.knowledgeBase + agent.commitmentStore).split('\n')) {
-      if (new RegExp('^' + term.match(/([A-Za-z0-9_])+/g)[0] + '\\(').test(line)) {
-        if (!agent.commitmentStore.includes(line))
-          agent.commitmentStore += `${line}\n`;
-
-        termsToAdd = termsToAdd.concat(line.match(/(?<=,|-|, \()([A-Za-z0-9])+(?=\()/g));
-      }
-    }
-
-    for (let i = 0; i < termsToAdd.length; i++) {
-      for (const line of agent.knowledgeBase.split('\n')) {
-        if (new RegExp('^' + termsToAdd[i] + '\\(').test(line)) {
-          termsToAdd = termsToAdd.concat(line.match(/(?<=,|-|, \()([A-Za-z0-9])+(?=\()/g));
-
+      for (const line of (agent.knowledgeBase + agent.commitmentStore).split('\n')) {
+        if (new RegExp('^' + justification.match(/([A-Za-z0-9_])+/g)[0] + '\\(X(?=\\)|,[A-Z]|,' + justification.match(/([A-Za-z0-9_])+/g)[2] + ')').test(line)) {
           if (!agent.commitmentStore.includes(line))
             agent.commitmentStore += `${line}\n`;
+
+          termsToAdd = termsToAdd.concat(line.match(/(?<=,|-|, \()([A-Za-z0-9])+(?=\()/g));
+        }
+      }
+
+      for (let i = 0; i < termsToAdd.length; i++) {
+        for (const line of agent.knowledgeBase.split('\n')) {
+          if (new RegExp('^' + termsToAdd[i] + '\\(').test(line)) {
+            if (line.match(/(?<=,|-|, \()([A-Za-z0-9])+(?=\()/g)) {
+              for (const match of line.match(/(?<=,|-|, \()([A-Za-z0-9])+(?=\()/g)) {
+                if (!termsToAdd.includes(match))
+                  termsToAdd.push(match);
+              }
+            }
+
+            if (!agent.commitmentDependencies.includes(line))
+              agent.commitmentDependencies += `${line}\n`;
+          }
         }
       }
     }
@@ -220,7 +237,7 @@ class DeliberationDialogue extends Dialogue {
     for (const match of justifications.match(/([A-Za-z0-9])+/g)) {
       if (match[0] !== match[0].toLowerCase()) {
         const prologSession = pl.create();
-        prologSession.consult(agent.knowledgeBase + agent.commitmentStore);
+        prologSession.consult(justificationsInPrologFormat + otherAgent.commitmentStore + otherAgent.commitmentDependencies);
 
         if (justifications[justifications.length - 1] !== '.' && justifications[justifications.length - 2] !== '.') {
           justifications = justifications + '.'
@@ -276,11 +293,10 @@ class DeliberationDialogue extends Dialogue {
     /* TYPE-SPECIFIC POST-CONDITIONS */
 
     // Com_O ⇒ Com_O ∪ p(X) ∈ B, where B is the set of terms in the body of the agreed preference rule
-
     let termsToAdd = [];
 
     for (const line of (agent.knowledgeBase + agent.commitmentStore).split('\n')) {
-      if (new RegExp('^' + term.match(/([A-Za-z0-9_])+/g)[0] + '\\(').test(line)) {
+      if (new RegExp('^' + term.match(/([A-Za-z0-9_])+/g)[0] + '\\(X(?=\\)|,[A-Z]|,' + term.match(/([A-Za-z0-9_])+/g)[2] + ')').test(line)) {
         if (!agent.commitmentStore.includes(line))
           agent.commitmentStore += `${line}\n`;
 
@@ -291,10 +307,15 @@ class DeliberationDialogue extends Dialogue {
     for (let i = 0; i < termsToAdd.length; i++) {
       for (const line of agent.knowledgeBase.split('\n')) {
         if (new RegExp('^' + termsToAdd[i] + '\\(').test(line)) {
-          termsToAdd = termsToAdd.concat(line.match(/(?<=,|-|, \()([A-Za-z0-9])+(?=\()/g));
+          if (line.match(/(?<=,|-|, \()([A-Za-z0-9])+(?=\()/g)) {
+            for (const match of line.match(/(?<=,|-|, \()([A-Za-z0-9])+(?=\()/g)) {
+              if (!termsToAdd.includes(match))
+                termsToAdd.push(match);
+            }
+          }
 
-          if (!agent.commitmentStore.includes(line))
-            agent.commitmentStore += `${line}\n`;
+          if (!agent.commitmentDependencies.includes(line))
+            agent.commitmentDependencies += `${line}\n`;
         }
       }
     }

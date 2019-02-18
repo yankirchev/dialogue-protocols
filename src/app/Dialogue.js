@@ -189,7 +189,7 @@ class Dialogue {
     }
 
     const prologSession = pl.create();
-    prologSession.consult(justificationsInPrologFormat + otherAgent.commitmentStore);
+    prologSession.consult(justificationsInPrologFormat + otherAgent.commitmentStore + otherAgent.commitmentDependencies);
     prologSession.query(term);
     prologSession.answer(x => {
       if (pl.format_answer(x) !== 'true ;') {

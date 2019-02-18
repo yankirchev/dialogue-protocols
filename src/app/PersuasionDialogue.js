@@ -37,7 +37,6 @@ class PersuasionDialogue extends Dialogue {
 
     if (agent !== this.proponent) {
       const atom = term.match(/([A-Za-z0-9_])+/g)[1];
-      const predicate = term.match(/([A-Za-z0-9_])+/g)[0];
 
       // demo(∏_O ∪ Com_O, acceptableRestaurant(a))
       prologSession.query(`acceptableRestaurant(${atom}).`);
@@ -52,19 +51,28 @@ class PersuasionDialogue extends Dialogue {
       let termsToCheck = [];
 
       for (const line of agent.knowledgeBase.split('\n')) {
-        if (new RegExp('^acceptableRestaurant\\(').test(line))
-          termsToCheck = termsToCheck.concat(line.match(/(?<=,|-|, \()([A-Za-z0-9])+(?=\()/g));
+        if (/^acceptableRestaurant\(X/.test(line)) {
+          for (const match of line.match(/(?<=,|-|, \()([A-Za-z0-9])+(?=\()/g)) {
+            if (!termsToCheck.includes(match)) {
+              termsToCheck.push(match);
+            }
+          }
+        }
       }
 
       for (let i = 0; i < termsToCheck.length; i++) {
         for (const line of agent.knowledgeBase.split('\n')) {
-          if (new RegExp('^' + termsToCheck[i] + '\\(').test(line))
-            termsToCheck = termsToCheck.concat(line.match(/(?<=,|-|, \()([A-Za-z0-9])+(?=\()/g));
-
+          if (new RegExp('^' + termsToCheck[i] + '\\(X').test(line)) {
+            for (const match of line.match(/(?<=,|-|, \()([A-Za-z0-9])+(?=\()/g)) {
+              if (!termsToCheck.includes(match)) {
+                termsToCheck.push(match);
+              }
+            }
+          }
         }
       }
 
-      if (!termsToCheck.includes(predicate)) {
+      if (!termsToCheck.includes(term.match(/([A-Za-z0-9_])+/g)[0])) {
         throw new Error(`Pre-conditions of ${agent.name} claiming "${translate(term)}" are not satisfied because ` +
           `the claim does not correspond to a feature in the body of the agent's preference rule!`);
       }
@@ -79,7 +87,6 @@ class PersuasionDialogue extends Dialogue {
 
     if (agent !== this.proponent) {
       const atom = term.match(/([A-Za-z0-9_])+/g)[1];
-      const predicate = term.match(/([A-Za-z0-9_])+/g)[0];
 
       // Com_O ⇒ Com_O ∪ acceptableRestaurant(a)
       if (!agent.commitmentStore.includes(`acceptableRestaurant(${atom}).`))
@@ -89,7 +96,7 @@ class PersuasionDialogue extends Dialogue {
       let termsToAdd = [];
 
       for (const line of (agent.knowledgeBase + agent.commitmentStore).split('\n')) {
-        if (new RegExp('^' + predicate + '\\(').test(line)) {
+        if (new RegExp('^' + term.match(/([A-Za-z0-9_])+/g)[0] + '\\(X(?=\\)|,[A-Z]|,' + term.match(/([A-Za-z0-9_])+/g)[2] + ')').test(line)) {
           if (!agent.commitmentStore.includes(line))
             agent.commitmentStore += `${line}\n`;
 
@@ -100,10 +107,15 @@ class PersuasionDialogue extends Dialogue {
       for (let i = 0; i < termsToAdd.length; i++) {
         for (const line of agent.knowledgeBase.split('\n')) {
           if (new RegExp('^' + termsToAdd[i] + '\\(').test(line)) {
-            termsToAdd = termsToAdd.concat(line.match(/(?<=,|-|, \()([A-Za-z0-9])+(?=\()/g));
+            if (line.match(/(?<=,|-|, \()([A-Za-z0-9])+(?=\()/g)) {
+              for (const match of line.match(/(?<=,|-|, \()([A-Za-z0-9])+(?=\()/g)) {
+                if (!termsToAdd.includes(match))
+                  termsToAdd.push(match);
+              }
+            }
 
-            if (!agent.commitmentStore.includes(line))
-              agent.commitmentStore += `${line}\n`;
+            if (!agent.commitmentDependencies.includes(line))
+              agent.commitmentDependencies += `${line}\n`;
           }
         }
       }
@@ -149,20 +161,29 @@ class PersuasionDialogue extends Dialogue {
       let termsToCheck = [];
 
       for (const line of agent.knowledgeBase.split('\n')) {
-        if (new RegExp('^acceptableRestaurant\\(').test(line))
-          termsToCheck = termsToCheck.concat(line.match(/(?<=,|-|, \()([A-Za-z0-9])+(?=\()/g));
+        if (/^acceptableRestaurant\(X/.test(line)) {
+          for (const match of line.match(/(?<=,|-|, \()([A-Za-z0-9])+(?=\()/g)) {
+            if (!termsToCheck.includes(match)) {
+              termsToCheck.push(match);
+            }
+          }
+        }
       }
 
       for (let i = 0; i < termsToCheck.length; i++) {
         for (const line of agent.knowledgeBase.split('\n')) {
-          if (new RegExp('^' + termsToCheck[i] + '\\(').test(line))
-            termsToCheck = termsToCheck.concat(line.match(/(?<=,|-|, \()([A-Za-z0-9])+(?=\()/g));
-
+          if (new RegExp('^' + termsToCheck[i] + '\\(X').test(line)) {
+            for (const match of line.match(/(?<=,|-|, \()([A-Za-z0-9])+(?=\()/g)) {
+              if (!termsToCheck.includes(match)) {
+                termsToCheck.push(match);
+              }
+            }
+          }
         }
       }
 
       if (!termsToCheck.includes(term.match(/([A-Za-z0-9_])+/g)[0])) {
-        throw new Error(`Pre-conditions of ${agent.name} questioning "${translate(term)}" are not satisfied because ` +
+        throw new Error(`Pre-conditions of ${agent.name} conceding to "${translate(term)}" are not satisfied because ` +
           `the claim does not correspond to a feature in the body of the agent's preference rule!`);
       }
     }
@@ -181,7 +202,7 @@ class PersuasionDialogue extends Dialogue {
       let termsToAdd = [];
 
       for (const line of (agent.knowledgeBase + agent.commitmentStore).split('\n')) {
-        if (new RegExp('^' + term.match(/([A-Za-z0-9_])+/g)[0] + '\\(').test(line)) {
+        if (new RegExp('^' + term.match(/([A-Za-z0-9_])+/g)[0] + '\\(X(?=\\)|,[A-Z]|,' + term.match(/([A-Za-z0-9_])+/g)[2] + ')').test(line)) {
           if (!agent.commitmentStore.includes(line))
             agent.commitmentStore += `${line}\n`;
 
@@ -192,10 +213,15 @@ class PersuasionDialogue extends Dialogue {
       for (let i = 0; i < termsToAdd.length; i++) {
         for (const line of agent.knowledgeBase.split('\n')) {
           if (new RegExp('^' + termsToAdd[i] + '\\(').test(line)) {
-            termsToAdd = termsToAdd.concat(line.match(/(?<=,|-|, \()([A-Za-z0-9])+(?=\()/g));
+            if (line.match(/(?<=,|-|, \()([A-Za-z0-9])+(?=\()/g)) {
+              for (const match of line.match(/(?<=,|-|, \()([A-Za-z0-9])+(?=\()/g)) {
+                if (!termsToAdd.includes(match))
+                  termsToAdd.push(match);
+              }
+            }
 
-            if (!agent.commitmentStore.includes(line))
-              agent.commitmentStore += `${line}\n`;
+            if (!agent.commitmentDependencies.includes(line))
+              agent.commitmentDependencies += `${line}\n`;
           }
         }
       }
@@ -237,15 +263,24 @@ class PersuasionDialogue extends Dialogue {
       let termsToCheck = [];
 
       for (const line of agent.knowledgeBase.split('\n')) {
-        if (new RegExp('^acceptableRestaurant\\(').test(line))
-          termsToCheck = termsToCheck.concat(line.match(/(?<=,|-|, \()([A-Za-z0-9])+(?=\()/g));
+        if (/^acceptableRestaurant\(X/.test(line)) {
+          for (const match of line.match(/(?<=,|-|, \()([A-Za-z0-9])+(?=\()/g)) {
+            if (!termsToCheck.includes(match)) {
+              termsToCheck.push(match);
+            }
+          }
+        }
       }
 
       for (let i = 0; i < termsToCheck.length; i++) {
         for (const line of agent.knowledgeBase.split('\n')) {
-          if (new RegExp('^' + termsToCheck[i] + '\\(').test(line))
-            termsToCheck = termsToCheck.concat(line.match(/(?<=,|-|, \()([A-Za-z0-9])+(?=\()/g));
-
+          if (new RegExp('^' + termsToCheck[i] + '\\(X').test(line)) {
+            for (const match of line.match(/(?<=,|-|, \()([A-Za-z0-9])+(?=\()/g)) {
+              if (!termsToCheck.includes(match)) {
+                termsToCheck.push(match);
+              }
+            }
+          }
         }
       }
 
@@ -262,7 +297,7 @@ class PersuasionDialogue extends Dialogue {
       let termsToAdd = [];
 
       for (const line of (agent.knowledgeBase + agent.commitmentStore).split('\n')) {
-        if (new RegExp('^' + term.match(/([A-Za-z0-9_])+/g)[0] + '\\(').test(line)) {
+        if (new RegExp('^' + term.match(/([A-Za-z0-9_])+/g)[0] + '\\(X(?=\\)|,[A-Z]|,' + term.match(/([A-Za-z0-9_])+/g)[2] + ')').test(line)) {
           if (!agent.commitmentStore.includes(line))
             agent.commitmentStore += `${line}\n`;
 
@@ -273,10 +308,15 @@ class PersuasionDialogue extends Dialogue {
       for (let i = 0; i < termsToAdd.length; i++) {
         for (const line of agent.knowledgeBase.split('\n')) {
           if (new RegExp('^' + termsToAdd[i] + '\\(').test(line)) {
-            termsToAdd = termsToAdd.concat(line.match(/(?<=,|-|, \()([A-Za-z0-9])+(?=\()/g));
+            if (line.match(/(?<=,|-|, \()([A-Za-z0-9])+(?=\()/g)) {
+              for (const match of line.match(/(?<=,|-|, \()([A-Za-z0-9])+(?=\()/g)) {
+                if (!termsToAdd.includes(match))
+                  termsToAdd.push(match);
+              }
+            }
 
-            if (!agent.commitmentStore.includes(line))
-              agent.commitmentStore += `${line}\n`;
+            if (!agent.commitmentDependencies.includes(line))
+              agent.commitmentDependencies += `${line}\n`;
           }
         }
       }
