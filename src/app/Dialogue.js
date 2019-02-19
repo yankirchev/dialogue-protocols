@@ -9,8 +9,8 @@ class Dialogue {
     }
 
     this.agents = agents;
-    this.commitmentStoreHistory = [];
-    this.text = '';
+    this.commitmentStoreHistory = [['', '', '']];
+    this.text = `${agents[0].name}: Where shall we eat?\n`;
   }
 
   saveCommitmentStores() {
