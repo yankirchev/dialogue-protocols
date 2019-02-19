@@ -43,12 +43,12 @@ function translate(term) {
     translation = `${decamelise(term.match(/([A-Za-z0-9_])+/g)[1])} has property ${decamelise(term.match(/([A-Za-z0-9])+/g)[0])}`;
 
   if (term.match(/([A-Za-z0-9_])+/g)[2] && term.match(/([A-Za-z0-9_])+/g)[2] !== '_') {
-    translation += ` of value ${term.match(/([A-Za-z0-9_])+/g)[2]}`;
+    translation += ` of value ${decamelise(term.match(/([A-Za-z0-9_])+/g)[2])}`;
 
     if (term.match(/([A-Za-z0-9_])+/g)[3] && term.match(/([A-Za-z0-9_])+/g)[3] !== '_')
-      translation += ` and cost ${term.match(/([A-Za-z0-9_])+/g)[3]}`;
+      translation += ` and cost ${decamelise(term.match(/([A-Za-z0-9_])+/g)[3])}`;
   } else if (term.match(/([A-Za-z0-9_])+/g)[3] && term.match(/([A-Za-z0-9_])+/g)[3] !== '_')
-    translation += ` of cost ${term.match(/([A-Za-z0-9_])+/g)[3]}`;
+    translation += ` of cost ${decamelise(term.match(/([A-Za-z0-9_])+/g)[3])}`;
 
   return translation;
 }
