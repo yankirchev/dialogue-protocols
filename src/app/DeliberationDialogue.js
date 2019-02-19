@@ -256,7 +256,7 @@ class DeliberationDialogue extends Dialogue {
         }
 
         prologSession.query(justifications);
-        prologSession.answer(x => justifications = justifications.replace(match, pl.format_answer(x).split(" ")[2].replace(/,|\./g, '')));
+        prologSession.answer(x => justifications = justifications.replace(match, pl.format_answer(x).split(" ")[2].replace(/,|\./g, ''))); // eslint-disable-line no-loop-func
       }
     }
 
