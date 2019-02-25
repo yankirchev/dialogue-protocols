@@ -10,6 +10,15 @@ class PersuasionDialogue extends Dialogue {
     this.proponent = agents[proponentIndex];
   }
 
+  isOver() {
+    for (const agent of this.agents) {
+      if (!agent.commitmentStore.includes(`acceptableRestaurant(${this.proponent.initialPreference}).`))
+        return false;
+    }
+
+    return true;
+  }
+
   // (Counter)Claim(ag_i, l) | (Counter)Claim(O, p(a))
   claim(agent, term) {
     const restaurant = term.match(/([A-Za-z0-9])+/g)[1];

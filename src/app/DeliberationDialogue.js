@@ -10,6 +10,36 @@ class DeliberationDialogue extends Dialogue {
     this.agreedPreferenceRule = 'acceptableRestaurant(X):-';
   }
 
+  isOver() {
+    let collectiveCommitmentStore = '';
+
+    for (const agent of this.agents) {
+      for (const line of agent.commitmentStore.split('\n')) {
+        if (!/^acceptableRestaurant\(/.test(line)) {
+          collectiveCommitmentStore += `${line}\n`;
+        }
+      }
+    }
+
+    collectiveCommitmentStore += this.agreedPreferenceRule;
+
+    let agreedRestaurant = '';
+
+    const prologSession = pl.create();
+    prologSession.consult(collectiveCommitmentStore);
+    prologSession.query('acceptableRestaurant(X).');
+    prologSession.answer(x => {
+      agreedRestaurant = pl.format_answer(x).split(" ")[2];
+    });
+
+    for (const agent of this.agents) {
+      if (!agent.commitmentStore.includes(`acceptableRestaurant(${agreedRestaurant})`))
+        return false;
+    }
+
+    return true;
+  }
+
   addTermToAgreedPreferenceRule(term) {
     if (!this.agreedPreferenceRule.includes(term.substring(0, term.length - 1).replace(term.match(/([A-Za-z0-9_])+/g)[1], 'X'))) {
       if (this.agreedPreferenceRule[this.agreedPreferenceRule.length - 1] === '-') {
