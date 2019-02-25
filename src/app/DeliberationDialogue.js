@@ -10,6 +10,16 @@ class DeliberationDialogue extends Dialogue {
     this.agreedPreferenceRule = 'acceptableRestaurant(X):-';
   }
 
+  addTermToAgreedPreferenceRule(term) {
+    if (!this.agreedPreferenceRule.includes(term.substring(0, term.length - 1).replace(term.match(/([A-Za-z0-9_])+/g)[1], 'X'))) {
+      if (this.agreedPreferenceRule[this.agreedPreferenceRule.length - 1] === '-') {
+        this.agreedPreferenceRule += term.replace(term.match(/([A-Za-z0-9_])+/g)[1], 'X');
+      } else {
+        this.agreedPreferenceRule = `${this.agreedPreferenceRule.substring(0, this.agreedPreferenceRule.length - 1)},${term.replace(term.match(/([A-Za-z0-9_])+/g)[1], 'X')}`;
+      }
+    }
+  }
+
   // (Counter)Claim(ag_i, l) | (Counter)Claim(O, p(a))
   claim(agent, term) {
     const restaurant = term.match(/([A-Za-z0-9])+/g)[1];
@@ -308,8 +318,7 @@ class DeliberationDialogue extends Dialogue {
     }
 
     /* ADD TERM TO BODY OF AGREED PREFERENCE RULE */
-
-    this.agreedPreferenceRule += `${term.substring(0, term.length - 1).replace(term.match(/([A-Za-z0-9_])+/g)[1], 'X')},`;
+    this.addTermToAgreedPreferenceRule(term);
 
     /* GENERAL POST-CONDITIONS */
 
