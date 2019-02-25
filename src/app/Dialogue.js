@@ -1,6 +1,6 @@
 import pl from 'tau-prolog';
 
-import { format, translate } from './helper';
+import { format, translate } from './utils/helper';
 
 class Dialogue {
   constructor(agents) {

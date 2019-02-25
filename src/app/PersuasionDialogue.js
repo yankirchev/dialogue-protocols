@@ -1,7 +1,7 @@
 import pl from 'tau-prolog';
 
 import Dialogue from './Dialogue';
-import { translate } from './helper';
+import { translate } from './utils/helper';
 
 class PersuasionDialogue extends Dialogue {
   constructor(agents, proponentIndex) {
