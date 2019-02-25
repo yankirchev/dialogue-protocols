@@ -4,14 +4,17 @@ import Dialogue from './Dialogue';
 import { translate } from './helper';
 
 class PersuasionDialogue extends Dialogue {
-  constructor(agents, indexOfProponent) {
+  constructor(agents, proponentIndex) {
     super(agents);
 
-    this.proponent = agents[indexOfProponent];
+    this.proponent = agents[proponentIndex];
   }
 
-  // Claim(ag_i, l) | Claim(O, p(a))
+  // (Counter)Claim(ag_i, l) | (Counter)Claim(O, p(a))
   claim(agent, term) {
+    const restaurant = term.match(/([A-Za-z0-9])+/g)[1];
+    const property = term.match(/([A-Za-z0-9])+/g)[0];
+
     /* GENERAL PRE-CONDITIONS */
 
     // demo(∏_ag_i ∪ Com_ag_i, l)
@@ -36,16 +39,21 @@ class PersuasionDialogue extends Dialogue {
     /*  TYPE-SPECIFIC PRE-CONDITIONS */
 
     if (agent !== this.proponent) {
-      const atom = term.match(/([A-Za-z0-9_])+/g)[1];
+      if (!this.isPreferred(agent, restaurant)) {
+        // for some agent ag_j ≠ O, preferable(ag_j, a)
+        let isPreferredByAnotherAgent = false;
 
-      // demo(∏_O ∪ Com_O, acceptableRestaurant(a))
-      prologSession.query(`acceptableRestaurant(${atom}).`);
-      prologSession.answer(x => {
-        if (pl.format_answer(x) !== 'true ;') {
-          throw new Error(`Pre-conditions of ${agent.name} claiming "${translate(term)}" are not satisfied because ` +
-            `the agent cannot demonstrate "${translate(`acceptableRestaurant(${atom}).`)}" through their knowledge base and/or commitment store!`);
+        for (const otherAgent of this.agents) {
+          if (otherAgent !== agent && this.isPreferred(otherAgent, restaurant)) {
+            isPreferredByAnotherAgent = true;
+          }
         }
-      });
+
+        if (!isPreferredByAnotherAgent) {
+          throw new Error(`Pre-conditions of ${agent.name} claiming "${translate(term)}" are not satisfied because ` +
+            `the restaurant is not preferred by any other agent!`);
+        }
+      }
 
       // p(X) ∈ B, where B is the set of terms in the body of the preference rule of O
       let termsToCheck = [];
@@ -72,7 +80,7 @@ class PersuasionDialogue extends Dialogue {
         }
       }
 
-      if (!termsToCheck.includes(term.match(/([A-Za-z0-9_])+/g)[0])) {
+      if (!termsToCheck.includes(property)) {
         throw new Error(`Pre-conditions of ${agent.name} claiming "${translate(term)}" are not satisfied because ` +
           `the claim does not correspond to a feature in the body of the agent's preference rule!`);
       }
@@ -86,17 +94,20 @@ class PersuasionDialogue extends Dialogue {
     /* TYPE-SPECIFIC POST-CONDITIONS */
 
     if (agent !== this.proponent) {
-      const atom = term.match(/([A-Za-z0-9_])+/g)[1];
-
-      // Com_O ⇒ Com_O ∪ acceptableRestaurant(a)
-      if (!agent.commitmentStore.includes(`acceptableRestaurant(${atom}).`))
-        agent.commitmentStore += `acceptableRestaurant(${atom}).\n`;
+      if (this.isPreferred(agent, restaurant)) {
+        // Com_O ⇒ Com_O ∪ acceptableRestaurant(a) iff demo(∏_O ∪ Com_O, acceptableRestaurant(a))
+        prologSession.query(`acceptableRestaurant(${restaurant}).`);
+        prologSession.answer(x => {
+          if (pl.format_answer(x) === 'true ;' && !agent.commitmentStore.includes(`acceptableRestaurant(${restaurant}).`))
+            agent.commitmentStore += `acceptableRestaurant(${restaurant}).\n`;
+        });
+      }
 
       // Com_O ⇒ Com_O ∪ (p(X) ∈ B), where B is the set of terms in the body of the preference rule of O
       let termsToAdd = [];
 
       for (const line of (agent.knowledgeBase + agent.commitmentStore).split('\n')) {
-        if (new RegExp('^' + term.match(/([A-Za-z0-9_])+/g)[0] + '\\(X(?=\\)|,[A-Z]|,' + term.match(/([A-Za-z0-9_])+/g)[2] + ')').test(line)) {
+        if (new RegExp('^' + property + '\\(X(?=\\)|,[A-Z]|,' + term.match(/([A-Za-z0-9_])+/g)[2] + ')').test(line)) {
           if (!agent.commitmentStore.includes(line))
             agent.commitmentStore += `${line}\n`;
 
@@ -123,12 +134,18 @@ class PersuasionDialogue extends Dialogue {
 
     /* UPDATE DIALOGUE TEXT AND SAVE COMMITMENT STORE HISTORY */
 
-    this.text += `${agent.name}: ${translate(term)}.\n`
+    if (this.isPreferred(agent, restaurant))
+      this.text += `${agent.name}: ${translate(term)}.\n`
+    else
+      this.text += `${agent.name}: But ${translate(term)}.\n`
+
     this.saveCommitmentStores();
   }
 
   // Concede(ag_i, l) | Concede(O, p(a))
   concede(agent, term) {
+    const property = term.match(/([A-Za-z0-9])+/g)[0];
+
     /* GENERAL PRE-CONDITIONS */
 
     // for some agent ag_j ≠ ag_i, l ∈ Com_ag_j
@@ -158,7 +175,7 @@ class PersuasionDialogue extends Dialogue {
 
     if (agent !== this.proponent) {
       // p(X) ∈ B, where B is the set of terms in the body of the preference rule of O
-      let termsToCheck = [];
+      let termsToCheck = ['acceptableRestaurant'];
 
       for (const line of agent.knowledgeBase.split('\n')) {
         if (/^acceptableRestaurant\(X/.test(line)) {
@@ -182,7 +199,7 @@ class PersuasionDialogue extends Dialogue {
         }
       }
 
-      if (!termsToCheck.includes(term.match(/([A-Za-z0-9_])+/g)[0])) {
+      if (!termsToCheck.includes(property)) {
         throw new Error(`Pre-conditions of ${agent.name} conceding to "${translate(term)}" are not satisfied because ` +
           `the claim does not correspond to a feature in the body of the agent's preference rule!`);
       }
@@ -202,7 +219,7 @@ class PersuasionDialogue extends Dialogue {
       let termsToAdd = [];
 
       for (const line of (agent.knowledgeBase + agent.commitmentStore).split('\n')) {
-        if (new RegExp('^' + term.match(/([A-Za-z0-9_])+/g)[0] + '\\(X(?=\\)|,[A-Z]|,' + term.match(/([A-Za-z0-9_])+/g)[2] + ')').test(line)) {
+        if (new RegExp('^' + property + '\\(X(?=\\)|,[A-Z]|,' + term.match(/([A-Za-z0-9_])+/g)[2] + ')').test(line)) {
           if (!agent.commitmentStore.includes(line))
             agent.commitmentStore += `${line}\n`;
 
@@ -235,6 +252,8 @@ class PersuasionDialogue extends Dialogue {
 
   // Question(ag_i, l) | Question(O,p(a))
   question(agent, term) {
+    const property = term.match(/([A-Za-z0-9])+/g)[0];
+
     /* GENERAL PRE-CONDITIONS */
 
     // ∀(ag_j) ∈ Ag, l ∉ Com_ag_j
@@ -284,7 +303,7 @@ class PersuasionDialogue extends Dialogue {
         }
       }
 
-      if (!termsToCheck.includes(term.match(/([A-Za-z0-9_])+/g)[0])) {
+      if (!termsToCheck.includes(property)) {
         throw new Error(`Pre-conditions of ${agent.name} questioning "${translate(term)}" are not satisfied because ` +
           `the claim does not correspond to a feature in the body of the agent's preference rule!`);
       }
@@ -297,7 +316,7 @@ class PersuasionDialogue extends Dialogue {
       let termsToAdd = [];
 
       for (const line of (agent.knowledgeBase + agent.commitmentStore).split('\n')) {
-        if (new RegExp('^' + term.match(/([A-Za-z0-9_])+/g)[0] + '\\(X(?=\\)|,[A-Z]|,' + term.match(/([A-Za-z0-9_])+/g)[2] + ')').test(line)) {
+        if (new RegExp('^' + property + '\\(X(?=\\)|,[A-Z]|,' + term.match(/([A-Za-z0-9_])+/g)[2] + ')').test(line)) {
           if (!agent.commitmentStore.includes(line))
             agent.commitmentStore += `${line}\n`;
 

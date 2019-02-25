@@ -23,6 +23,19 @@ class Dialogue {
     this.commitmentStoreHistory.push(newCommitmentStoresRecord);
   }
 
+  isPreferred(agent, restaurant) {
+    let preferredRestaurants = [agent.initialPreference];
+
+    const prologSession = pl.create();
+    prologSession.consult(agent.knowledgeBase + agent.commitmentStore);
+    prologSession.query('acceptableRestaurant(X).');
+    prologSession.answers(x => {
+      preferredRestaurants.push(pl.format_answer(x).split(" ")[2]);
+    });
+
+    return preferredRestaurants.includes(restaurant);
+  }
+
   // Claim(ag_i, l)
   claim(agent, term) {
     /*  PRE-CONDITIONS */

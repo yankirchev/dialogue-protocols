@@ -1,9 +1,10 @@
 class Agent {
-  constructor(name, knowledgeBase) {
+  constructor(name, initialPreference, knowledgeBase) {
     this.commitmentDependencies = '';
     this.commitmentStore = '';
-    this.name = name;
+    this.initialPreference = initialPreference;
     this.knowledgeBase = knowledgeBase;
+    this.name = name;
   }
 }
 
