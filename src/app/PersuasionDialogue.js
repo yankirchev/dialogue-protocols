@@ -1,6 +1,7 @@
 import pl from 'tau-prolog';
 
 import Dialogue from './Dialogue';
+
 import { translate } from './utils/helper';
 
 class PersuasionDialogue extends Dialogue {
@@ -12,8 +13,9 @@ class PersuasionDialogue extends Dialogue {
 
   isOver() {
     for (const agent of this.agents) {
-      if (!agent.commitmentStore.includes(`acceptableRestaurant(${this.proponent.initialPreference}).`))
+      if (!agent.commitmentStore.includes(`acceptableRestaurant(${this.proponent.initialPreference}).`)) {
         return false;
+      }
     }
 
     return true;
@@ -33,7 +35,7 @@ class PersuasionDialogue extends Dialogue {
     prologSession.answer(x => {
       if (pl.format_answer(x) !== 'true ;') {
         throw new Error(`Pre-conditions of ${agent.name} claiming "${translate(term)}" are not satisfied because ` +
-          `the agent cannot demonstrate the claim through their knowledge base and/or commitment store!`);
+          `the agent cannot demonstrate the claim through their knowledge base and commitment store!`);
       }
     });
 
@@ -107,8 +109,9 @@ class PersuasionDialogue extends Dialogue {
         // Com_O ⇒ Com_O ∪ acceptableRestaurant(a) iff demo(∏_O ∪ Com_O, acceptableRestaurant(a))
         prologSession.query(`acceptableRestaurant(${restaurant}).`);
         prologSession.answer(x => {
-          if (pl.format_answer(x) === 'true ;' && !agent.commitmentStore.includes(`acceptableRestaurant(${restaurant}).`))
+          if (pl.format_answer(x) === 'true ;' && !agent.commitmentStore.includes(`acceptableRestaurant(${restaurant}).`)) {
             agent.commitmentStore += `acceptableRestaurant(${restaurant}).\n`;
+          }
         });
       }
 
@@ -117,8 +120,9 @@ class PersuasionDialogue extends Dialogue {
 
       for (const line of (agent.knowledgeBase + agent.commitmentStore).split('\n')) {
         if (new RegExp('^' + property + '\\(X(?=\\)|,[A-Z]|,' + term.match(/([A-Za-z0-9_])+/g)[2] + ')').test(line)) {
-          if (!agent.commitmentStore.includes(line))
+          if (!agent.commitmentStore.includes(line)) {
             agent.commitmentStore += `${line}\n`;
+          }
 
           termsToAdd = termsToAdd.concat(line.match(/(?<=,|-|, \()([A-Za-z0-9])+(?=\()/g));
         }
@@ -129,13 +133,15 @@ class PersuasionDialogue extends Dialogue {
           if (new RegExp('^' + termsToAdd[i] + '\\(').test(line)) {
             if (line.match(/(?<=,|-|, \()([A-Za-z0-9])+(?=\()/g)) {
               for (const match of line.match(/(?<=,|-|, \()([A-Za-z0-9])+(?=\()/g)) {
-                if (!termsToAdd.includes(match))
+                if (!termsToAdd.includes(match)) {
                   termsToAdd.push(match);
+                }
               }
             }
 
-            if (!agent.commitmentDependencies.includes(line))
+            if (!agent.commitmentStore.includes(line) && !agent.commitmentDependencies.includes(line)) {
               agent.commitmentDependencies += `${line}\n`;
+            }
           }
         }
       }
@@ -173,10 +179,8 @@ class PersuasionDialogue extends Dialogue {
     }
 
     // not(¬l ∈ Com_ag_i)
-    if (term.includes('\\+(') && (agent.commitmentStore.includes(`${term.substring(3, term.length - 2)}.`))) {
-      throw new Error(`Pre-conditions of ${agent.name} conceding to "${translate(term)}" are not satisfied because ` +
-        `the agent's commitment store contains the negation of the claim!`);
-    } else if (agent.commitmentStore.includes(`\\+(${term.substring(0, term.length - 1)}).`)) {
+    if ((term.includes('\\+(') && (agent.commitmentStore.includes(`${term.substring(3, term.length - 2)}.`)))
+      || (!term.includes('\\+(') && agent.commitmentStore.includes(`\\+(${term.substring(0, term.length - 1)}).`))) {
       throw new Error(`Pre-conditions of ${agent.name} conceding to "${translate(term)}" are not satisfied because ` +
         `the agent's commitment store contains the negation of the claim!`);
     }
@@ -230,8 +234,9 @@ class PersuasionDialogue extends Dialogue {
 
       for (const line of (agent.knowledgeBase + agent.commitmentStore).split('\n')) {
         if (new RegExp('^' + property + '\\(X(?=\\)|,[A-Z]|,' + term.match(/([A-Za-z0-9_])+/g)[2] + ')').test(line)) {
-          if (!agent.commitmentStore.includes(line))
+          if (!agent.commitmentStore.includes(line)) {
             agent.commitmentStore += `${line}\n`;
+          }
 
           termsToAdd = termsToAdd.concat(line.match(/(?<=,|-|, \()([A-Za-z0-9])+(?=\()/g));
         }
@@ -242,13 +247,15 @@ class PersuasionDialogue extends Dialogue {
           if (new RegExp('^' + termsToAdd[i] + '\\(').test(line)) {
             if (line.match(/(?<=,|-|, \()([A-Za-z0-9])+(?=\()/g)) {
               for (const match of line.match(/(?<=,|-|, \()([A-Za-z0-9])+(?=\()/g)) {
-                if (!termsToAdd.includes(match))
+                if (!termsToAdd.includes(match)) {
                   termsToAdd.push(match);
+                }
               }
             }
 
-            if (!agent.commitmentDependencies.includes(line))
+            if (!agent.commitmentStore.includes(line) && !agent.commitmentDependencies.includes(line)) {
               agent.commitmentDependencies += `${line}\n`;
+            }
           }
         }
       }
@@ -256,7 +263,7 @@ class PersuasionDialogue extends Dialogue {
 
     /* UPDATE DIALOGUE TEXT AND SAVE COMMITMENT STORE HISTORY */
 
-    this.text += `${agent.name}: I accept that ${translate(term)}.\n`
+    this.text += `${agent.name}: I accept that ${translate(term)}.\n`;
     this.saveCommitmentStores();
   }
 
@@ -281,7 +288,7 @@ class PersuasionDialogue extends Dialogue {
     prologSession.answer(x => {
       if (pl.format_answer(x) === 'true ;') {
         throw new Error(`Pre-conditions of ${agent.name} questioning if "${translate(term)}" are not satisfied because ` +
-          `the agent can demonstrate the claim through their knowledge base and/or commitment store!`);
+          `the agent can demonstrate the claim through their knowledge base and commitment store!`);
       }
     });
 
@@ -314,7 +321,7 @@ class PersuasionDialogue extends Dialogue {
       }
 
       if (!termsToCheck.includes(property)) {
-        throw new Error(`Pre-conditions of ${agent.name} questioning "${translate(term)}" are not satisfied because ` +
+        throw new Error(`Pre-conditions of ${agent.name} questioning if "${translate(term)}" are not satisfied because ` +
           `the claim does not correspond to a feature in the body of the agent's preference rule!`);
       }
     }
@@ -327,8 +334,9 @@ class PersuasionDialogue extends Dialogue {
 
       for (const line of (agent.knowledgeBase + agent.commitmentStore).split('\n')) {
         if (new RegExp('^' + property + '\\(X(?=\\)|,[A-Z]|,' + term.match(/([A-Za-z0-9_])+/g)[2] + ')').test(line)) {
-          if (!agent.commitmentStore.includes(line))
+          if (!agent.commitmentStore.includes(line)) {
             agent.commitmentStore += `${line}\n`;
+          }
 
           termsToAdd = termsToAdd.concat(line.match(/(?<=,|-|, \()([A-Za-z0-9])+(?=\()/g));
         }
@@ -339,13 +347,15 @@ class PersuasionDialogue extends Dialogue {
           if (new RegExp('^' + termsToAdd[i] + '\\(').test(line)) {
             if (line.match(/(?<=,|-|, \()([A-Za-z0-9])+(?=\()/g)) {
               for (const match of line.match(/(?<=,|-|, \()([A-Za-z0-9])+(?=\()/g)) {
-                if (!termsToAdd.includes(match))
+                if (!termsToAdd.includes(match)) {
                   termsToAdd.push(match);
+                }
               }
             }
 
-            if (!agent.commitmentDependencies.includes(line))
+            if (!agent.commitmentStore.includes(line) && !agent.commitmentDependencies.includes(line)) {
               agent.commitmentDependencies += `${line}\n`;
+            }
           }
         }
       }
@@ -353,7 +363,7 @@ class PersuasionDialogue extends Dialogue {
 
     /* UPDATE DIALOGUE TEXT AND SAVE COMMITMENT STORE HISTORY */
 
-    this.text += `${agent.name}: I wonder if ${translate(term)}.\n`
+    this.text += `${agent.name}: I wonder if ${translate(term)}.\n`;
     this.saveCommitmentStores();
   }
 }

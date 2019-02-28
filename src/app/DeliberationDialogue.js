@@ -1,7 +1,8 @@
 import pl from 'tau-prolog';
 
 import Dialogue from './Dialogue';
-import { format, translate } from './utils/helper';
+
+import { decamelise, format, translate } from './utils/helper';
 
 class DeliberationDialogue extends Dialogue {
   constructor(agents) {
@@ -41,11 +42,13 @@ class DeliberationDialogue extends Dialogue {
   }
 
   addTermToAgreedPreferenceRule(term) {
-    if (!this.agreedPreferenceRule.includes(term.substring(0, term.length - 1).replace(term.match(/([A-Za-z0-9_])+/g)[1], 'X'))) {
+    const restaurant = term.match(/([A-Za-z0-9_])+/g)[1];
+
+    if (!this.agreedPreferenceRule.includes(term.substring(0, term.length - 1).replace(restaurant, 'X'))) {
       if (this.agreedPreferenceRule[this.agreedPreferenceRule.length - 1] === '-') {
-        this.agreedPreferenceRule += term.replace(term.match(/([A-Za-z0-9_])+/g)[1], 'X');
+        this.agreedPreferenceRule += term.replace(restaurant, 'X');
       } else {
-        this.agreedPreferenceRule = `${this.agreedPreferenceRule.substring(0, this.agreedPreferenceRule.length - 1)},${term.replace(term.match(/([A-Za-z0-9_])+/g)[1], 'X')}`;
+        this.agreedPreferenceRule = `${this.agreedPreferenceRule.substring(0, this.agreedPreferenceRule.length - 1)},${term.replace(restaurant, 'X')}`;
       }
     }
   }
@@ -64,7 +67,7 @@ class DeliberationDialogue extends Dialogue {
     prologSession.answer(x => {
       if (pl.format_answer(x) !== 'true ;') {
         throw new Error(`Pre-conditions of ${agent.name} claiming "${translate(term)}" are not satisfied because ` +
-          `the agent cannot demonstrate the claim through their knowledge base and/or commitment store!`);
+          `the agent cannot demonstrate the claim through their knowledge base and commitment store!`);
       }
     });
 
@@ -135,8 +138,9 @@ class DeliberationDialogue extends Dialogue {
       // Com_O ⇒ Com_O ∪ acceptableRestaurant(a) iff demo(∏_O ∪ Com_O, acceptableRestaurant(a))
       prologSession.query(`acceptableRestaurant(${restaurant}).`);
       prologSession.answer(x => {
-        if (pl.format_answer(x) === 'true ;' && !agent.commitmentStore.includes(`acceptableRestaurant(${restaurant}).`))
+        if (pl.format_answer(x) === 'true ;' && !agent.commitmentStore.includes(`acceptableRestaurant(${restaurant}).`)) {
           agent.commitmentStore += `acceptableRestaurant(${restaurant}).\n`;
+        }
       });
     }
 
@@ -145,8 +149,9 @@ class DeliberationDialogue extends Dialogue {
 
     for (const line of (agent.knowledgeBase + agent.commitmentStore).split('\n')) {
       if (new RegExp('^' + property + '\\(X(?=\\)|,[A-Z]|,' + term.match(/([A-Za-z0-9_])+/g)[2] + ')').test(line)) {
-        if (!agent.commitmentStore.includes(line))
+        if (!agent.commitmentStore.includes(line)) {
           agent.commitmentStore += `${line}\n`;
+        }
 
         termsToAdd = termsToAdd.concat(line.match(/(?<=,|-|, \()([A-Za-z0-9])+(?=\()/g));
       }
@@ -157,13 +162,15 @@ class DeliberationDialogue extends Dialogue {
         if (new RegExp('^' + termsToAdd[i] + '\\(').test(line)) {
           if (line.match(/(?<=,|-|, \()([A-Za-z0-9])+(?=\()/g)) {
             for (const match of line.match(/(?<=,|-|, \()([A-Za-z0-9])+(?=\()/g)) {
-              if (!termsToAdd.includes(match))
+              if (!termsToAdd.includes(match)) {
                 termsToAdd.push(match);
+              }
             }
           }
 
-          if (!agent.commitmentDependencies.includes(line))
+          if (!agent.commitmentStore.includes(line) && !agent.commitmentDependencies.includes(line)) {
             agent.commitmentDependencies += `${line}\n`;
+          }
         }
       }
     }
@@ -181,16 +188,18 @@ class DeliberationDialogue extends Dialogue {
 
   // Since(ag_i, l, ∏) | ConcedingSince(ag_i, g(a), p(a))
   since(agent, otherAgent, term, justifications) {
-    let justificationsInPrologFormat = '';
-
-    for (const justification of justifications) {
-      justificationsInPrologFormat += `${justification}\n`;
-    }
-
+    const restaurant = term.match(/([A-Za-z0-9])+/g)[1];
     const prologSession = pl.create();
 
-    // Since(ag_i, l, ∏)
+    let justificationsAsOneString = '';
+
+    for (const justification of justifications) {
+      justificationsAsOneString += `${justification}\n`;
+    }
+
     if (!/^acceptableRestaurant\(/.test(term)) {
+      // Since(ag_i, l, ∏)
+
       /* GENERAL PRE-CONDITIONS */
 
       // l ∈ Com_ag_i
@@ -207,7 +216,7 @@ class DeliberationDialogue extends Dialogue {
         }
       }
 
-      prologSession.consult(justificationsInPrologFormat + otherAgent.commitmentStore + otherAgent.commitmentDependencies);
+      prologSession.consult(justificationsAsOneString + otherAgent.commitmentStore + otherAgent.commitmentDependencies);
       prologSession.query(term);
       prologSession.answer(x => {
         if (pl.format_answer(x) !== 'true ;') {
@@ -234,35 +243,35 @@ class DeliberationDialogue extends Dialogue {
 
       /* UPDATE DIALOGUE TEXT AND SAVE COMMITMENT STORE HISTORY */
 
-      justifications = justifications[0].split('-')[1].split(', ')[0].replace(/X/g, term.match(/([A-Za-z0-9])+/g)[1]);
+      let bodyOfRuleOfClaim = justifications[0].split('-')[1].split(', ')[0].replace(/X/g, restaurant);
 
-      for (const match of justifications.match(/([A-Za-z0-9])+/g)) {
+      for (const match of bodyOfRuleOfClaim.match(/([A-Za-z0-9])+/g)) {
         if (match[0] !== match[0].toLowerCase()) {
           const prologSession = pl.create();
-          prologSession.consult(justificationsInPrologFormat + otherAgent.commitmentStore + otherAgent.commitmentDependencies);
+          prologSession.consult(justificationsAsOneString + otherAgent.commitmentStore + otherAgent.commitmentDependencies);
 
-          if (justifications[justifications.length - 1] !== '.' && justifications[justifications.length - 2] !== '.') {
-            justifications = justifications + '.'
+          if (bodyOfRuleOfClaim[bodyOfRuleOfClaim.length - 1] !== '.' && bodyOfRuleOfClaim[bodyOfRuleOfClaim.length - 2] !== '.') {
+            bodyOfRuleOfClaim = bodyOfRuleOfClaim + '.'
           }
 
-          prologSession.query(justifications);
-          prologSession.answer(x => justifications = justifications.replace(match, pl.format_answer(x).split(" ")[2].replace(/,|\./g, ''))); // eslint-disable-line no-loop-func
+          prologSession.query(bodyOfRuleOfClaim);
+          prologSession.answer(x => bodyOfRuleOfClaim = bodyOfRuleOfClaim.replace(match, pl.format_answer(x).split(" ")[2].replace(/,|\./g, ''))); // eslint-disable-line no-loop-func
         }
       }
 
-      this.text += `${agent.name}: ${translate(term)} since ${format(justifications.split('),'))}.\n`
-    } else { // ConcedingSince(ag_i, g(a), p(a))
+      this.text += `${agent.name}: ${translate(term)} since ${format(bodyOfRuleOfClaim.split('),'))}.\n`;
+    } else {
+      // ConcedingSince(ag_i, g(a), p(a))
 
       /* TYPE-SPECIFIC PRE-CONDITIONS */
 
       // demo(∏_ag_i ∪ Com_ag_i ∪ p(a), g(a))
-      prologSession.consult(agent.knowledgeBase + agent.commitmentStore + justificationsInPrologFormat);
+      prologSession.consult(agent.knowledgeBase + agent.commitmentStore + justificationsAsOneString);
       prologSession.query(term);
       prologSession.answer(x => {
         if (pl.format_answer(x) !== 'true ;') {
-          console.log(pl.format_answer(x));
           throw new Error(`Pre-conditions of ${agent.name} offering reasoning for "${translate(term)}" are not satisfied because ` +
-            `the agent cannot demonstrate the claim through their knowledge base, commitment store, and/or the justifications!`);
+            `the agent cannot demonstrate the claim through their knowledge base, commitment store, and the justifications!`);
         }
       });
 
@@ -273,12 +282,14 @@ class DeliberationDialogue extends Dialogue {
         let doesAppearLocally = true;
 
         for (const justification of justifications) {
-          if (someAgent !== agent && !someAgent.commitmentStore.includes(justification))
+          if (someAgent !== agent && !someAgent.commitmentStore.includes(justification)) {
             doesAppearLocally = false;
+          }
         }
 
-        if (someAgent !== agent && doesAppearLocally === true)
+        if (someAgent !== agent && doesAppearLocally === true) {
           doesAppearGlobally = true;
+        }
       }
 
       if (doesAppearGlobally === false) {
@@ -309,8 +320,9 @@ class DeliberationDialogue extends Dialogue {
 
         for (const line of (agent.knowledgeBase + agent.commitmentStore).split('\n')) {
           if (new RegExp('^' + justification.match(/([A-Za-z0-9_])+/g)[0] + '\\(X(?=\\)|,[A-Z]|,' + justification.match(/([A-Za-z0-9_])+/g)[2] + ')').test(line)) {
-            if (!agent.commitmentStore.includes(line))
+            if (!agent.commitmentStore.includes(line)) {
               agent.commitmentStore += `${line}\n`;
+            }
 
             termsToAdd = termsToAdd.concat(line.match(/(?<=,|-|, \()([A-Za-z0-9])+(?=\()/g));
           }
@@ -321,19 +333,29 @@ class DeliberationDialogue extends Dialogue {
             if (new RegExp('^' + termsToAdd[i] + '\\(').test(line)) {
               if (line.match(/(?<=,|-|, \()([A-Za-z0-9])+(?=\()/g)) {
                 for (const match of line.match(/(?<=,|-|, \()([A-Za-z0-9])+(?=\()/g)) {
-                  if (!termsToAdd.includes(match))
+                  if (!termsToAdd.includes(match)) {
                     termsToAdd.push(match);
+                  }
                 }
               }
 
-              if (!agent.commitmentDependencies.includes(line))
+              if (!agent.commitmentStore.includes(line) && !agent.commitmentDependencies.includes(line)) {
                 agent.commitmentDependencies += `${line}\n`;
+              }
             }
           }
         }
       }
 
-      this.text += `${agent.name}: Since ${format(justifications)}, that means ${translate(term)}.\n`
+      this.text += `${agent.name}: Since ${format(justifications)}, that makes ${decamelise(restaurant)} an acceptable restaurant. `;
+
+      const uninstatitatedJustifications = [];
+
+      for (let i = 0; i < justifications.length; i++) {
+        uninstatitatedJustifications.push(justifications[i].replace(justifications[i].match(/([A-Za-z0-9])+/g)[1], '_'));
+      }
+
+      this.text += `We want to go to a restaurant with ${format(uninstatitatedJustifications)}.\n`;
     }
 
     this.saveCommitmentStores();
@@ -341,6 +363,9 @@ class DeliberationDialogue extends Dialogue {
 
   // Concede(ag_i, l) | Concede(O, p(a))
   concede(agent, term) {
+    const restaurant = term.match(/([A-Za-z0-9_])+/g)[1];
+    const property = term.match(/([A-Za-z0-9])+/g)[0];
+
     /* GENERAL PRE-CONDITIONS */
 
     // for some agent ag_j ≠ ag_i, l ∈ Com_ag_j
@@ -358,10 +383,8 @@ class DeliberationDialogue extends Dialogue {
     }
 
     // not(¬l ∈ Com_ag_i)
-    if (term.includes('\\+(') && (agent.commitmentStore.includes(`${term.substring(3, term.length - 2)}.`))) {
-      throw new Error(`Pre-conditions of ${agent.name} conceding to "${translate(term)}" are not satisfied because ` +
-        `the agent's commitment store contains the negation of the claim!`);
-    } else if (agent.commitmentStore.includes(`\\+(${term.substring(0, term.length - 1)}).`)) {
+    if ((term.includes('\\+(') && (agent.commitmentStore.includes(`${term.substring(3, term.length - 2)}.`)))
+      || (!term.includes('\\+(') && agent.commitmentStore.includes(`\\+(${term.substring(0, term.length - 1)}).`))) {
       throw new Error(`Pre-conditions of ${agent.name} conceding to "${translate(term)}" are not satisfied because ` +
         `the agent's commitment store contains the negation of the claim!`);
     }
@@ -382,9 +405,10 @@ class DeliberationDialogue extends Dialogue {
     let termsToAdd = [];
 
     for (const line of (agent.knowledgeBase + agent.commitmentStore).split('\n')) {
-      if (new RegExp('^' + term.match(/([A-Za-z0-9_])+/g)[0] + '\\(X(?=\\)|,[A-Z]|,' + term.match(/([A-Za-z0-9_])+/g)[2] + ')').test(line)) {
-        if (!agent.commitmentStore.includes(line))
+      if (new RegExp('^' + property + '\\(X(?=\\)|,[A-Z]|,' + term.match(/([A-Za-z0-9_])+/g)[2] + ')').test(line)) {
+        if (!agent.commitmentStore.includes(line)) {
           agent.commitmentStore += `${line}\n`;
+        }
 
         termsToAdd = termsToAdd.concat(line.match(/(?<=,|-|, \()([A-Za-z0-9])+(?=\()/g));
       }
@@ -395,20 +419,27 @@ class DeliberationDialogue extends Dialogue {
         if (new RegExp('^' + termsToAdd[i] + '\\(').test(line)) {
           if (line.match(/(?<=,|-|, \()([A-Za-z0-9])+(?=\()/g)) {
             for (const match of line.match(/(?<=,|-|, \()([A-Za-z0-9])+(?=\()/g)) {
-              if (!termsToAdd.includes(match))
+              if (!termsToAdd.includes(match)) {
                 termsToAdd.push(match);
+              }
             }
           }
 
-          if (!agent.commitmentDependencies.includes(line))
+          if (!agent.commitmentStore.includes(line) && !agent.commitmentDependencies.includes(line)) {
             agent.commitmentDependencies += `${line}\n`;
+          }
         }
       }
     }
 
     /* UPDATE DIALOGUE TEXT AND SAVE COMMITMENT STORE HISTORY */
 
-    this.text += `${agent.name}: I accept that ${translate(term)}.\n`
+    if (property !== 'acceptableRestaurant') {
+      this.text += `${agent.name}: I accept that ${translate(term)}. We want to to a restaurant with ${translate(term.replace(restaurant, '_'))}.\n`;
+    } else {
+      this.text += `${agent.name}: I accept that ${translate(term)}.\n`;
+    }
+
     this.saveCommitmentStores();
   }
 }

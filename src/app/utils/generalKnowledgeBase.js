@@ -1,4 +1,4 @@
-const factsAndRules = `distance(restaurantOne, 5, 0).
+const generalKnowledgeBase = `distance(restaurantOne,5,0).
 distance(restaurantTwo,10,10).
 distance(restaurantThree,1,0).
 mealTime(restaurantOne,90).
@@ -31,10 +31,10 @@ acceptableRestaurant(X):-quality(X,good),healthy(X).
 acceptableRestaurant(X):-cuisine(X,cuisineTwo).
 acceptableRestaurant(X):-quality(X,good), (quality(Y,good),cheaper(Y,X)->false;true).
 acceptableRestaurant(X):-quality(X,good),atmosphere(X),beverage(X),distance(X,_,0), (quality(Y,good),atmosphere(Y),beverage(Y),quicker(Y,X)->false;true).
-acceptableRestaurant(X):-quality(X,good),healthy(X),atmosphere(X),distance(X,_,0).
-acceptableRestaurant(X):-cuisine(X,cuisineTwo),beverage(X),atmosphere(X),quality(X,good),healthy(X).
-acceptableRestaurant(X):-quality(X,good),atmosphere(X), (quality(Y,good),cheaper(Y,X)->false;true).
+acceptableRestaurant(X):-healthy(X),atmosphere(X),beverage(X),distance(X,_,0).
+acceptableRestaurant(X):-quality(X,good),healthy(X),atmosphere(X),beverage(X).
+acceptableRestaurant(X):-quality(X,good),atmosphere(X).
 cheaper(X,Y):-totalCost(X,Cx),totalCost(Y,Cy), Cx < Cy.
 quicker(X,Y):-totalTime(X,Tx),totalTime(Y,Ty), Tx < Ty.`
 
-export default factsAndRules;
+export default generalKnowledgeBase;

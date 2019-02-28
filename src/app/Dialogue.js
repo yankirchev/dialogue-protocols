@@ -9,8 +9,8 @@ class Dialogue {
     }
 
     this.agents = agents;
-    this.commitmentStoreHistory = [['', '', '']];
     this.text = `${agents[0].name}: Where shall we eat?\n`;
+    this.commitmentStoreHistory = [['', '', '']];
   }
 
   saveCommitmentStores() {
@@ -34,7 +34,7 @@ class Dialogue {
     prologSession.answer(x => {
       if (pl.format_answer(x) !== 'true ;') {
         throw new Error(`Pre-conditions of ${agent.name} claiming "${translate(term)}" are not satisfied because ` +
-          `the agent cannot demonstrate the claim through their knowledge base and/or commitment store!`);
+          `the agent cannot demonstrate the claim through their knowledge base and commitment store!`);
       }
     });
 
@@ -53,7 +53,7 @@ class Dialogue {
 
     /* UPDATE DIALOGUE TEXT AND SAVE COMMITMENT STORE HISTORY */
 
-    this.text += `${agent.name}: ${translate(term)}.\n`
+    this.text += `${agent.name}: ${translate(term)}.\n`;
     this.saveCommitmentStores();
   }
 
@@ -68,7 +68,7 @@ class Dialogue {
     prologSession.answer(x => {
       if (pl.format_answer(x) === 'true ;') {
         throw new Error(`Pre-conditions of ${agent.name} asking why "${translate(term)}" are not satisfied because ` +
-          `the agent can already demonstrate the claim through their knowledge base and/or commitment store!`);
+          `the agent can demonstrate the claim through their knowledge base and commitment store!`);
       }
     });
 
@@ -88,7 +88,7 @@ class Dialogue {
 
     /* UPDATE DIALOGUE TEXT AND SAVE COMMITMENT STORE HISTORY */
 
-    this.text += `${agent.name}: Why is it that ${translate(term)}?\n`
+    this.text += `${agent.name}: Why is it that ${translate(term)}?\n`;
     this.saveCommitmentStores();
   }
 
@@ -111,10 +111,8 @@ class Dialogue {
     }
 
     // not(¬l ∈ Com_ag_i)
-    if (term.includes('\\+(') && (agent.commitmentStore.includes(`${term.substring(3, term.length - 2)}.`))) {
-      throw new Error(`Pre-conditions of ${agent.name} conceding to "${translate(term)}" are not satisfied because ` +
-        `the agent's commitment store contains the negation of the claim!`);
-    } else if (agent.commitmentStore.includes(`\\+(${term.substring(0, term.length - 1)}).`)) {
+    if ((term.includes('\\+(') && (agent.commitmentStore.includes(`${term.substring(3, term.length - 2)}.`)))
+      || (!term.includes('\\+(') && agent.commitmentStore.includes(`\\+(${term.substring(0, term.length - 1)}).`))) {
       throw new Error(`Pre-conditions of ${agent.name} conceding to "${translate(term)}" are not satisfied because ` +
         `the agent's commitment store contains the negation of the claim!`);
     }
@@ -128,7 +126,7 @@ class Dialogue {
 
     /* UPDATE DIALOGUE TEXT AND SAVE COMMITMENT STORE HISTORY */
 
-    this.text += `${agent.name}: I accept that ${translate(term)}.\n`
+    this.text += `${agent.name}: I accept that ${translate(term)}.\n`;
     this.saveCommitmentStores();
   }
 
@@ -143,7 +141,7 @@ class Dialogue {
     prologSession.answer(x => {
       if (pl.format_answer(x) === 'true ;') {
         throw new Error(`Pre-conditions of ${agent.name} retracting "${translate(term)}" are not satisfied because ` +
-          `the agent can still demonstrate the claim through their knowledge base and/or remaining commitment store!`);
+          `the agent can demonstrate the claim through their knowledge base and remaining commitment store!`);
       }
     });
 
@@ -160,7 +158,7 @@ class Dialogue {
 
     /* UPDATE DIALOGUE TEXT AND SAVE COMMITMENT STORE HISTORY */
 
-    this.text += `${agent.name}: I take back that ${translate(term)}.\n`
+    this.text += `${agent.name}: I take back that ${translate(term)}.\n`;
     this.saveCommitmentStores();
   }
 
@@ -182,14 +180,14 @@ class Dialogue {
       }
     }
 
-    let justificationsInPrologFormat = '';
+    let justificationsAsOneString = '';
 
     for (const justification of justifications) {
-      justificationsInPrologFormat += `${justification}\n`;
+      justificationsAsOneString += `${justification}\n`;
     }
 
     const prologSession = pl.create();
-    prologSession.consult(justificationsInPrologFormat + otherAgent.commitmentStore + otherAgent.commitmentDependencies);
+    prologSession.consult(justificationsAsOneString + otherAgent.commitmentStore + otherAgent.commitmentDependencies);
     prologSession.query(term);
     prologSession.answer(x => {
       if (pl.format_answer(x) !== 'true ;') {
@@ -216,23 +214,23 @@ class Dialogue {
 
     /* UPDATE DIALOGUE TEXT AND SAVE COMMITMENT STORE HISTORY */
 
-    justifications = justifications[0].split('-')[1].split(', ')[0].replace(/X/g, term.match(/([A-Za-z0-9])+/g)[1]);
+    let bodyOfRuleOfClaim = justifications[0].split('-')[1].split(', ')[0].replace(/X/g, term.match(/([A-Za-z0-9])+/g)[1]);
 
-    for (const match of justifications.match(/([A-Za-z0-9])+/g)) {
+    for (const match of bodyOfRuleOfClaim.match(/([A-Za-z0-9])+/g)) {
       if (match[0] !== match[0].toLowerCase()) {
         const prologSession = pl.create();
-        prologSession.consult(justificationsInPrologFormat + otherAgent.commitmentStore + otherAgent.commitmentDependencies);
+        prologSession.consult(justificationsAsOneString + otherAgent.commitmentStore + otherAgent.commitmentDependencies);
 
-        if (justifications[justifications.length - 1] !== '.' && justifications[justifications.length - 2] !== '.') {
-          justifications = justifications + '.'
+        if (bodyOfRuleOfClaim[bodyOfRuleOfClaim.length - 1] !== '.' && bodyOfRuleOfClaim[bodyOfRuleOfClaim.length - 2] !== '.') {
+          bodyOfRuleOfClaim = bodyOfRuleOfClaim + '.'
         }
 
-        prologSession.query(justifications);
-        prologSession.answer(x => justifications = justifications.replace(match, pl.format_answer(x).split(" ")[2].replace(/,|\./g, ''))); // eslint-disable-line no-loop-func
+        prologSession.query(bodyOfRuleOfClaim);
+        prologSession.answer(x => bodyOfRuleOfClaim = bodyOfRuleOfClaim.replace(match, pl.format_answer(x).split(" ")[2].replace(/,|\./g, ''))); // eslint-disable-line no-loop-func
       }
     }
 
-    this.text += `${agent.name}: ${translate(term)} since ${format(justifications.split('),'))}.\n`
+    this.text += `${agent.name}: ${translate(term)} since ${format(bodyOfRuleOfClaim.split('),'))}.\n`;
     this.saveCommitmentStores();
   }
 
@@ -255,13 +253,13 @@ class Dialogue {
     prologSession.answer(x => {
       if (pl.format_answer(x) === 'true ;') {
         throw new Error(`Pre-conditions of ${agent.name} questioning if "${translate(term)}" are not satisfied because ` +
-          `the agent can demonstrate the claim through their knowledge base and/or commitment store!`);
+          `the agent can demonstrate the claim through their knowledge base and commitment store!`);
       }
     });
 
     /* UPDATE DIALOGUE TEXT AND SAVE COMMITMENT STORE HISTORY */
 
-    this.text += `${agent.name}: I wonder if ${translate(term)}.\n`
+    this.text += `${agent.name}: I wonder if ${translate(term)}.\n`;
     this.saveCommitmentStores();
   }
 }
