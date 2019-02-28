@@ -78,19 +78,19 @@ class DeliberationDialogue extends Dialogue {
 
     /*  TYPE-SPECIFIC PRE-CONDITIONS */
 
-    if (!this.isPreferred(agent, restaurant)) {
+    if (!agent.doesPrefer(restaurant)) {
       // for some agent ag_j ≠ O, preferable(ag_j, a)
-      let isPreferredByAnotherAgent = false;
+      let isPreferableToAnotherAgent = false;
 
       for (const otherAgent of this.agents) {
-        if (otherAgent !== agent && this.isPreferred(otherAgent, restaurant)) {
-          isPreferredByAnotherAgent = true;
+        if (otherAgent !== agent && otherAgent.doesPrefer(restaurant)) {
+          isPreferableToAnotherAgent = true;
         }
       }
 
-      if (!isPreferredByAnotherAgent) {
+      if (!isPreferableToAnotherAgent) {
         throw new Error(`Pre-conditions of ${agent.name} claiming "${translate(term)}" are not satisfied because ` +
-          `the restaurant is not preferred by any other agent!`);
+          `the restaurant is not preferable to any other agent!`);
       }
     }
 
@@ -131,7 +131,7 @@ class DeliberationDialogue extends Dialogue {
 
     /* TYPE-SPECIFIC POST-CONDITIONS */
 
-    if (this.isPreferred(agent, restaurant)) {
+    if (agent.doesPrefer(restaurant)) {
       // Com_O ⇒ Com_O ∪ acceptableRestaurant(a) iff demo(∏_O ∪ Com_O, acceptableRestaurant(a))
       prologSession.query(`acceptableRestaurant(${restaurant}).`);
       prologSession.answer(x => {
@@ -170,10 +170,11 @@ class DeliberationDialogue extends Dialogue {
 
     /* UPDATE DIALOGUE TEXT AND SAVE COMMITMENT STORE HISTORY */
 
-    if (this.isPreferred(agent, restaurant))
-      this.text += `${agent.name}: ${translate(term)}.\n`
-    else
-      this.text += `${agent.name}: But ${translate(term)}.\n`
+    if (agent.doesPrefer(restaurant)) {
+      this.text += `${agent.name}: ${translate(term)}.\n`;
+    } else {
+      this.text += `${agent.name}: But ${translate(term)}.\n`;
+    }
 
     this.saveCommitmentStores();
   }
