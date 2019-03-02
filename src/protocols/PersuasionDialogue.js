@@ -147,7 +147,7 @@ class PersuasionDialogue extends Dialogue {
       }
     }
 
-    /* UPDATE DIALOGUE TEXT AND SAVE COMMITMENT STORE HISTORY */
+    /* UPDATE DIALOGUE TEXT AND UPDATE COMMITMENT STORE HISTORY */
 
     if (agent.doesPrefer(restaurant)) {
       this.text += `${agent.name}: ${translate(term)}.\n`;
@@ -261,7 +261,7 @@ class PersuasionDialogue extends Dialogue {
       }
     }
 
-    /* UPDATE DIALOGUE TEXT AND SAVE COMMITMENT STORE HISTORY */
+    /* UPDATE DIALOGUE TEXT AND UPDATE COMMITMENT STORE HISTORY */
 
     this.text += `${agent.name}: I accept that ${translate(term)}.\n`;
     this.saveCommitmentStores();
@@ -361,7 +361,7 @@ class PersuasionDialogue extends Dialogue {
       }
     }
 
-    /* UPDATE DIALOGUE TEXT AND SAVE COMMITMENT STORE HISTORY */
+    /* UPDATE DIALOGUE TEXT AND UPDATE COMMITMENT STORE HISTORY */
 
     this.text += `${agent.name}: I wonder if ${translate(term)}.\n`;
     this.saveCommitmentStores();

@@ -175,7 +175,7 @@ class DeliberationDialogue extends Dialogue {
       }
     }
 
-    /* UPDATE DIALOGUE TEXT AND SAVE COMMITMENT STORE HISTORY */
+    /* UPDATE DIALOGUE TEXT AND UPDATE COMMITMENT STORE HISTORY */
 
     if (agent.doesPrefer(restaurant)) {
       this.text += `${agent.name}: ${translate(term)}.\n`;
@@ -241,7 +241,7 @@ class DeliberationDialogue extends Dialogue {
         }
       }
 
-      /* UPDATE DIALOGUE TEXT AND SAVE COMMITMENT STORE HISTORY */
+      /* UPDATE DIALOGUE TEXT AND UPDATE COMMITMENT STORE HISTORY */
 
       let bodyOfRuleOfClaim = justifications[0].split('-')[1].split(', ')[0].replace(/X/g, restaurant);
 
@@ -432,7 +432,7 @@ class DeliberationDialogue extends Dialogue {
       }
     }
 
-    /* UPDATE DIALOGUE TEXT AND SAVE COMMITMENT STORE HISTORY */
+    /* UPDATE DIALOGUE TEXT AND UPDATE COMMITMENT STORE HISTORY */
 
     if (property !== 'acceptableRestaurant') {
       this.text += `${agent.name}: I accept that ${translate(term)}. We want to to a restaurant with ${translate(term.replace(restaurant, '_'))}.\n`;

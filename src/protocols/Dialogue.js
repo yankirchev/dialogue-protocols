@@ -51,7 +51,7 @@ class Dialogue {
     // Com_ag_i ⇒ Com_ag_i ∪ l
     agent.commitmentStore += `${term}\n`;
 
-    /* UPDATE DIALOGUE TEXT AND SAVE COMMITMENT STORE HISTORY */
+    /* UPDATE DIALOGUE TEXT AND UPDATE COMMITMENT STORE HISTORY */
 
     this.text += `${agent.name}: ${translate(term)}.\n`;
     this.saveCommitmentStores();
@@ -86,7 +86,7 @@ class Dialogue {
         `no other agent's commitment store contains the claim!`);
     }
 
-    /* UPDATE DIALOGUE TEXT AND SAVE COMMITMENT STORE HISTORY */
+    /* UPDATE DIALOGUE TEXT AND UPDATE COMMITMENT STORE HISTORY */
 
     this.text += `${agent.name}: Why is it that ${translate(term)}?\n`;
     this.saveCommitmentStores();
@@ -124,7 +124,7 @@ class Dialogue {
       agent.commitmentStore += `${term}\n`;
     }
 
-    /* UPDATE DIALOGUE TEXT AND SAVE COMMITMENT STORE HISTORY */
+    /* UPDATE DIALOGUE TEXT AND UPDATE COMMITMENT STORE HISTORY */
 
     this.text += `${agent.name}: I accept that ${translate(term)}.\n`;
     this.saveCommitmentStores();
@@ -156,7 +156,7 @@ class Dialogue {
     // Com_ag_i ⇒ Com_ag_i \ l
     agent.commitmentStore = agent.commitmentStore.replace(`${term}\n`, '');
 
-    /* UPDATE DIALOGUE TEXT AND SAVE COMMITMENT STORE HISTORY */
+    /* UPDATE DIALOGUE TEXT AND UPDATE COMMITMENT STORE HISTORY */
 
     this.text += `${agent.name}: I take back that ${translate(term)}.\n`;
     this.saveCommitmentStores();
@@ -212,7 +212,7 @@ class Dialogue {
       }
     }
 
-    /* UPDATE DIALOGUE TEXT AND SAVE COMMITMENT STORE HISTORY */
+    /* UPDATE DIALOGUE TEXT AND UPDATE COMMITMENT STORE HISTORY */
 
     let bodyOfRuleOfClaim = justifications[0].split('-')[1].split(', ')[0].replace(/X/g, term.match(/([A-Za-z0-9])+/g)[1]);
 
@@ -257,7 +257,7 @@ class Dialogue {
       }
     });
 
-    /* UPDATE DIALOGUE TEXT AND SAVE COMMITMENT STORE HISTORY */
+    /* UPDATE DIALOGUE TEXT AND UPDATE COMMITMENT STORE HISTORY */
 
     this.text += `${agent.name}: I wonder if ${translate(term)}.\n`;
     this.saveCommitmentStores();
