@@ -1,0 +1,46 @@
+.generate-paragraph {
+  text-align: center;
+  margin-bottom: 2rem;
+  margin-top: 1rem;
+}
+
+.text-input-wrapper {
+  display: flex;
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.text-input {
+  max-width: 11rem !important;
+  min-width: 11rem !important;
+}
+
+.radio-button-groups-wrapper {
+  display: flex;
+  margin-left: auto;
+  margin-right: auto;
+  margin-bottom: -1rem;
+}
+
+.progress-buttons-wrapper {
+  display: flex;
+  margin-top: 2rem;
+  margin-bottom: 2rem;
+  justify-content: center;
+}
+
+.progress-button {
+  margin-left: 3rem;
+  margin-right: 3rem;
+}
+
+.progress-indicator {
+  display: flex;
+  justify-content: center;
+  margin-left: 2.5rem;
+}
+
+.reset-button{
+  display: flex;
+  justify-content: center;
+}

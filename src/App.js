@@ -38,7 +38,7 @@ class App extends Component {
               </ContentSwitcher>
             </div>
           </div>
-          {this.state.switchIndex === 0 && (
+          <div hidden={this.state.switchIndex !== 0}>
             <div className="bx--row">
               <div className="bx--col-xs-12">
                 <p className="home-paragraph">
@@ -53,8 +53,8 @@ class App extends Component {
                 </p>
               </div>
             </div>
-          )}
-          {this.state.switchIndex === 1 && (
+          </div>
+          <div hidden={this.state.switchIndex !== 1}>
             <div className="bx--row">
               <div className="bx--col-xs-12">
                 <p className="home-paragraph">
@@ -62,12 +62,10 @@ class App extends Component {
                 </p>
               </div>
             </div>
-          )}
-          {this.state.switchIndex === 2 && (
-            <p className="home-paragraph">
-              TBA
-            </p>
-          )}
+          </div>
+          <div hidden={this.state.switchIndex !== 2}>
+            <Generate />
+          </div>
         </div>
         <Footer
           labelOne="Copyright &copy; 2019 Yanko Kirchev"
