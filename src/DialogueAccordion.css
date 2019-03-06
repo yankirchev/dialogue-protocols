@@ -1,0 +1,14 @@
+.testing {
+  min-width: 0px !important;
+}
+
+.speech-acts-buttons-wrapper {
+  display: flex;
+  margin-top: 1rem;
+  margin-bottom: 2rem;
+  justify-content: center;
+}
+
+.dialogue-accordion {
+  margin-top: 2rem !important;
+}

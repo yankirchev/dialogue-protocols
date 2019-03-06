@@ -318,10 +318,11 @@ class Generate extends Component {
         {this.state.progressIndex === 4 && this.state.simulation && (
           <div>
             <div className="bx--row">
-              <div className="bx--col-xs-12">
-                <p className="generate-paragraph">
-                  TBA
-                </p>
+              <div className="bx--col-xs-12 bx--col-md-6">
+                <DialogueAccordion dialogue={this.state.simulation.simulatePersuasionDialogue()} />
+              </div>
+              <div className="bx--col-xs-12 bx--col-md-6">
+                <DialogueAccordion dialogue={this.state.simulation.simulateDeliberationDialogue()} />
               </div>
             </div>
             <div className="bx--row">

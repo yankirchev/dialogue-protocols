@@ -73,6 +73,8 @@ class Simulation {
 
     if (persuasionDialogue.isOver()) {
       return persuasionDialogue;
+    } else {
+      throw new Error('Persuasion dialogue has not reached an end state!');
     }
   }
 
@@ -106,8 +108,8 @@ class Simulation {
     deliberationDialogue.claim(deliberationDialogue.agents[0], `quality(${camelise(this.restaurantNames[0])},good).`);
     deliberationDialogue.claim(deliberationDialogue.agents[2], `price(${camelise(this.restaurantNames[0])},25).`);
     deliberationDialogue.claim(deliberationDialogue.agents[2], `price(${camelise(this.restaurantNames[2])},7).`);
-    deliberationDialogue.claim(deliberationDialogue.agents[1], `\\+(wine(${camelise(this.restaurantNames[2])})).`);
-    deliberationDialogue.claim(deliberationDialogue.agents[1], `wine(${camelise(this.restaurantNames[1])}).`);
+    deliberationDialogue.claim(deliberationDialogue.agents[1], `\\+(${camelise(this.beverage)}(${camelise(this.restaurantNames[2])})).`);
+    deliberationDialogue.claim(deliberationDialogue.agents[1], `${camelise(this.beverage)}(${camelise(this.restaurantNames[1])}).`);
     deliberationDialogue.claim(deliberationDialogue.agents[0], `\\+(atmosphere(${camelise(this.restaurantNames[2])})).`);
     deliberationDialogue.claim(deliberationDialogue.agents[0], `atmosphere(${camelise(this.restaurantNames[0])}).`);
     deliberationDialogue.claim(deliberationDialogue.agents[1], `atmosphere(${camelise(this.restaurantNames[1])}).`);
@@ -117,8 +119,8 @@ class Simulation {
     deliberationDialogue.claim(deliberationDialogue.agents[0], `healthy(${camelise(this.restaurantNames[0])}).`);
     deliberationDialogue.since(deliberationDialogue.agents[1], null, `acceptableRestaurant(${camelise(this.restaurantNames[0])}).`, [`quality(${camelise(this.restaurantNames[0])},good).`, `atmosphere(${camelise(this.restaurantNames[0])}).`]);
     deliberationDialogue.since(deliberationDialogue.agents[2], null, `acceptableRestaurant(${camelise(this.restaurantNames[1])}).`, [`quality(${camelise(this.restaurantNames[1])},good).`, `atmosphere(${camelise(this.restaurantNames[1])}).`]);
-    deliberationDialogue.concede(deliberationDialogue.agents[0], `wine(${camelise(this.restaurantNames[1])}).`);
-    deliberationDialogue.claim(deliberationDialogue.agents[0], `wine(${camelise(this.restaurantNames[0])}).`);
+    deliberationDialogue.concede(deliberationDialogue.agents[0], `${camelise(this.beverage)}(${camelise(this.restaurantNames[1])}).`);
+    deliberationDialogue.claim(deliberationDialogue.agents[0], `${camelise(this.beverage)}(${camelise(this.restaurantNames[0])}).`);
     deliberationDialogue.since(deliberationDialogue.agents[1], null, `acceptableRestaurant(${camelise(this.restaurantNames[0])}).`, [`distance(${camelise(this.restaurantNames[0])},_,0).`]);
     deliberationDialogue.concede(deliberationDialogue.agents[2], `acceptableRestaurant(${camelise(this.restaurantNames[0])}).`);
     deliberationDialogue.concede(deliberationDialogue.agents[1], `acceptableRestaurant(${camelise(this.restaurantNames[0])}).`);
@@ -133,6 +135,8 @@ class Simulation {
 
     if (deliberationDialogue.isOver()) {
       return deliberationDialogue;
+    } else {
+      throw new Error('Deliberation dialogue has not reached an end state!');
     }
   }
 
