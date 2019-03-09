@@ -16,8 +16,8 @@ beverage(restaurantTwo).
 cuisine(restaurantOne,cuisineOne).
 cuisine(restaurantTwo,cuisineTwo).
 cuisine(restaurantThree,cuisineThree).
-cuisine(X,med):-cuisine(X,cuisineOne).
-healthy(X):-cuisine(X,med).
+cuisine(X,mediterranean):-cuisine(X,cuisineOne).
+healthy(X):-cuisine(X,mediterranean).
 healthy(X):-vegetables(X).
 vegetables(X):-cuisine(X,cuisineTwo).
 trustworthy(colleague).

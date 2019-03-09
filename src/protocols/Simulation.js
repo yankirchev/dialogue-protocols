@@ -3,7 +3,7 @@ import PersuasionDialogue from './PersuasionDialogue';
 import DeliberationDialogue from './DeliberationDialogue';
 
 import generalKnowledgeBase from './utils/generalKnowledgeBase';
-import { camelise } from './utils/helper';
+import { camelise, decamelise } from './utils/helper';
 
 class Simulation {
   constructor(agentNames, restaurantNames, restaurantCuisines, beverage) {
@@ -64,9 +64,9 @@ class Simulation {
     persuasionDialogue.concede(persuasionDialogue.agents[0], `acceptableRestaurant(${camelise(this.restaurantNames[1])}).`);
 
     persuasionDialogue.text = persuasionDialogue.text
-      .replace(new RegExp(this.restaurantNames[0], 'gi'), this.restaurantNames[0])
-      .replace(new RegExp(this.restaurantNames[1], 'gi'), this.restaurantNames[1])
-      .replace(new RegExp(this.restaurantNames[2], 'gi'), this.restaurantNames[2])
+      .replace(new RegExp(decamelise(camelise(this.restaurantNames[0])), 'gi'), this.restaurantNames[0])
+      .replace(new RegExp(decamelise(camelise(this.restaurantNames[1])), 'gi'), this.restaurantNames[1])
+      .replace(new RegExp(decamelise(camelise(this.restaurantNames[2])), 'gi'), this.restaurantNames[2])
       .replace(new RegExp(this.restaurantCuisines[0], 'gi'), this.restaurantCuisines[0])
       .replace(new RegExp(this.restaurantCuisines[1], 'gi'), this.restaurantCuisines[1])
       .replace(new RegExp(this.restaurantCuisines[2], 'gi'), this.restaurantCuisines[2]);
@@ -126,9 +126,9 @@ class Simulation {
     deliberationDialogue.concede(deliberationDialogue.agents[1], `acceptableRestaurant(${camelise(this.restaurantNames[0])}).`);
 
     deliberationDialogue.text = deliberationDialogue.text
-      .replace(new RegExp(this.restaurantNames[0], 'gi'), this.restaurantNames[0])
-      .replace(new RegExp(this.restaurantNames[1], 'gi'), this.restaurantNames[1])
-      .replace(new RegExp(this.restaurantNames[2], 'gi'), this.restaurantNames[2])
+      .replace(new RegExp(decamelise(camelise(this.restaurantNames[0])), 'gi'), this.restaurantNames[0])
+      .replace(new RegExp(decamelise(camelise(this.restaurantNames[1])), 'gi'), this.restaurantNames[1])
+      .replace(new RegExp(decamelise(camelise(this.restaurantNames[2])), 'gi'), this.restaurantNames[2])
       .replace(new RegExp(this.restaurantCuisines[0], 'gi'), this.restaurantCuisines[0])
       .replace(new RegExp(this.restaurantCuisines[1], 'gi'), this.restaurantCuisines[1])
       .replace(new RegExp(this.restaurantCuisines[2], 'gi'), this.restaurantCuisines[2]);
