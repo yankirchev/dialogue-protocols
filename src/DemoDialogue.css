@@ -1,0 +1,11 @@
+.list-item {
+  margin-left: -2rem !important;
+}
+
+.unordered-nested-list {
+  margin-top: -1rem !important;
+}
+
+.nested-list-item {
+  margin-left: -1.65rem !important;
+}

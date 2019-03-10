@@ -1,14 +1,8 @@
-.testing {
-  min-width: 0px !important;
-}
-
-.speech-acts-buttons-wrapper {
+div.buttons-wrapper {
   display: flex;
-  margin-top: 1rem;
-  margin-bottom: 2rem;
-  justify-content: center;
+  margin-top: 2rem;
 }
 
-.dialogue-accordion {
-  margin-top: 2rem !important;
+Button.tertiary {
+  margin-left: auto;
 }

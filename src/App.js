@@ -1,7 +1,8 @@
 import React, { Component } from 'react';
-import { ContentSwitcher, Footer, Switch } from 'carbon-components-react'
+import { Button, ContentSwitcher, Switch } from 'carbon-components-react';
 
 import Generate from './Generate';
+import Home from './Home';
 
 import './App.css';
 
@@ -10,54 +11,61 @@ class App extends Component {
     super();
 
     this.state = {
-      switchIndex: 0
+      switchIndex: 0,
+      switchName: 'Diners\' Discourse'
     };
 
     this.onChange = this.onChange.bind(this);
   }
 
   onChange(event) {
-    this.setState({ switchIndex: event.index });
+    this.setState({
+      switchIndex: event.index,
+      switchName: event.name
+    });
   }
 
   render() {
     return (
       <div>
-        <div className="bx--grid">
-          <div className="bx--row">
-            <div className="bx--col-xs-12">
-              <h1 className="app-title">Diners' Discourse</h1>
+        <div className="announcement">
+          <p className="announcement">Check out the source code of this website.</p>
+          <Button small className="announcement" kind="tertiary" onClick={() => window.open('https://github.com/yankirchev/diners-discourse', '_blank').focus()}>
+            Go to GitHub
+          </Button>
+        </div>
+        <div className="header">
+          <div className="bx--grid">
+            <div className="bx--row">
+              <div className="bx--offset-md-1 bx--col-md-10 bx--offset-xl-2 bx--col-xl-8">
+                <h1 className="header">{this.state.switchName}</h1>
+              </div>
             </div>
           </div>
+        </div>
+        <div className="bx--grid">
           <div className="bx--row">
-            <div className="bx--col-xs-12">
+            <div className="bx--offset-md-1 bx--col-md-10 bx--offset-xl-2 bx--col-xl-8">
               <ContentSwitcher className="content-switcher" onChange={this.onChange}>
-                <Switch name="home" text="Home" />
-                <Switch name="background" text="Background" />
-                <Switch name="generate" text="Generate" />
+                <Switch name="Diners' Discourse" text="Home" />
+                <Switch name="Background" text="Background" />
+                <Switch name="Generate" text="Generate" />
               </ContentSwitcher>
             </div>
           </div>
           <div hidden={this.state.switchIndex !== 0}>
-            <div className="bx--row">
-              <div className="bx--col-xs-12">
-                <p className="home-paragraph">
-                  Diners' Discourse lets you generate persuasion and deliberation dialogues set in a
-                  familiar restaurant selection scenario and showcases their differences side-by-side.
-                </p>
-                <p className="home-paragraph">
-                  To learn more about the creation of this web application, go to "Background".
-                </p>
-                <p className="home-paragraph">
-                  To start generating dialogues, go to "Generate".
-                </p>
-              </div>
-            </div>
+            <Home />
           </div>
           <div hidden={this.state.switchIndex !== 1}>
             <div className="bx--row">
-              <div className="bx--col-xs-12">
-                <p className="home-paragraph">
+              <div className="bx--offset-md-1 bx--col-md-10 bx--offset-xl-2 bx--col-xl-8">
+                <div className="heading"></div>
+                <h2 className="heading">TBA</h2>
+              </div>
+            </div>
+            <div className="bx--row">
+              <div className="bx--offset-md-1 bx--col-md-10 bx--offset-xl-2 bx--col-xl-8">
+                <p className="paragraph">
                   TBA
                 </p>
               </div>
@@ -67,14 +75,6 @@ class App extends Component {
             <Generate />
           </div>
         </div>
-        <Footer
-          labelOne="Copyright &copy; 2019 Yanko Kirchev"
-          linkTextOne="Contact the author"
-          linkHrefOne="mailto:sgykirch@liverpool.ac.uk"
-          labelTwo="Department of Computer Science, University of Liverpool"
-          linkTextTwo="Contact the department"
-          linkHrefTwo="mailto:cstudy@liverpool.ac.uk"
-        />
       </div>
     );
   }
