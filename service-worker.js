@@ -14,7 +14,7 @@
 importScripts("https://storage.googleapis.com/workbox-cdn/releases/3.6.3/workbox-sw.js");
 
 importScripts(
-  "/diners-discourse/precache-manifest.7fc482aae63c16dc9dbfd63c2d9f493f.js"
+  "/diners-discourse/precache-manifest.3242768637a9db48a17be3ccd8df399c.js"
 );
 
 workbox.clientsClaim();
