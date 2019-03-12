@@ -51,7 +51,7 @@ class PersuasionDialogue extends Dialogue {
 
     if (agent !== this.proponent) {
       if (!agent.doesPrefer(restaurant)) {
-        // for some agent ag_j ≠ O, preferable(ag_j, a)
+        // for some agent ag_j ≠ ag_i, preferable(ag_j, a)
         let isPreferableToAnotherAgent = false;
 
         for (const otherAgent of this.agents) {

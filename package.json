@@ -12,13 +12,15 @@
     "tau-prolog": "^0.2.38"
   },
   "devDependencies": {
+    "babel-core": "^7.0.0-bridge.0",
+    "babel-preset-env": "^1.7.0",
     "gh-pages": "^2.0.1",
     "node-sass": "^4.11.0"
   },
   "scripts": {
     "start": "node-sass ./src/index.scss ./src/index.css && react-scripts start",
     "build": "node-sass ./src/index.scss ./src/index.css && react-scripts build",
-    "test": "react-scripts test",
+    "test": "react-scripts test --env=jsdom --verbose",
     "eject": "react-scripts eject",
     "predeploy": "npm run build",
     "deploy": "gh-pages -d build && rm -rf build"
