@@ -34,10 +34,15 @@ div.header {
   background-color: #f6f6f6;
   border-bottom: 0.1rem solid #047cc0;
   height: 10rem;
+  line-height: 10rem;
+  text-align: center;
 }
 
 h1.header {
+  display: inline-block;
   font-size: 3rem;
+  line-height: normal;
+  vertical-align: middle;
 }
 
 .content-switcher {
