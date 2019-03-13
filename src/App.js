@@ -11,8 +11,7 @@ class App extends Component {
     super();
 
     this.state = {
-      switchIndex: 0,
-      switchName: 'Diners\' Discourse'
+      switchIndex: 0
     };
 
     this.onChange = this.onChange.bind(this);
@@ -20,8 +19,7 @@ class App extends Component {
 
   onChange(event) {
     this.setState({
-      switchIndex: event.index,
-      switchName: event.name
+      switchIndex: event.index
     });
   }
 
@@ -38,7 +36,7 @@ class App extends Component {
           <div className="bx--grid">
             <div className="bx--row">
               <div className="bx--offset-md-1 bx--col-md-10 bx--offset-xl-2 bx--col-xl-8">
-                <h1 className="header">{this.state.switchName}</h1>
+                <h1 className="header">Diner's Discourse</h1>
               </div>
             </div>
           </div>
@@ -47,9 +45,9 @@ class App extends Component {
           <div className="bx--row">
             <div className="bx--offset-md-1 bx--col-md-10 bx--offset-xl-2 bx--col-xl-8">
               <ContentSwitcher className="content-switcher" onChange={this.onChange}>
-                <Switch name="Diners' Discourse" text="Home" />
-                <Switch name="Background" text="Background" />
-                <Switch name="Generate" text="Generate" />
+                <Switch name="home" text="Home" />
+                <Switch name="background" text="Background" />
+                <Switch name="generate" text="Generate" />
               </ContentSwitcher>
             </div>
           </div>
