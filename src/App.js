@@ -1,5 +1,5 @@
 import React, { Component } from 'react';
-import { Button, ContentSwitcher, Switch } from 'carbon-components-react';
+import { Button, ContentSwitcher, Link, Switch } from 'carbon-components-react';
 
 import Generate from './Generate';
 import Home from './Home';
@@ -73,6 +73,22 @@ class App extends Component {
             <Generate />
           </div>
         </div>
+        <footer class="bx--footer bx--footer--bottom-fixed footer">
+          <div className="bx--footer-info">
+            <div className="bx--footer-info__item">
+              <p className="bx--footer-label">Copyright &copy; Yanko Kirchev 2019</p>
+              <Link href="mailto:sgykirch@liverpool.ac.uk">Contact the author</Link>
+            </div>
+            <div className="bx--footer-info__item">
+              <p className="bx--footer-label">Powered by Carbon Components (React)</p>
+              <Link href="https://www.carbondesignsystem.com">Carbon Design System</Link>
+            </div>
+            <div className="bx--footer-info__item">
+              <p className="bx--footer-label">Powered by Tau Prolog</p>
+              <Link href="http://tau-prolog.org">Tau Prolog</Link>
+            </div>
+          </div>
+        </footer>
       </div>
     );
   }

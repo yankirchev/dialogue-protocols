@@ -26,7 +26,6 @@ Button.announcement:hover {
 }
 
 .bx--grid {
-  margin-bottom: 5rem;
   max-width: 1600px !important;
 }
 
@@ -63,4 +62,10 @@ h2.heading {
 
 p.paragraph {
   margin-top: 1rem;
+}
+
+footer.footer {
+  position: relative;
+  background-color: #f6f6f6;
+  margin-top: 5rem;
 }
