@@ -52,6 +52,16 @@ class DialogueAccordion extends Component {
                 </UnorderedList>
               </ListItem>
             )}
+            {this.props.dialogueType === 'Deliberation' && (
+              <ListItem className="list-item">
+                Agreed preference rule:
+                <UnorderedList nested className="unordered-nested-list">
+                  <ListItem className="nested-list-item">
+                    {this.props.dialogue.agreedPreferenceRuleHistory[speechActIndex]}
+                  </ListItem>
+                </UnorderedList>
+              </ListItem>
+            )}
           </UnorderedList>
         </AccordionItem>
       ))

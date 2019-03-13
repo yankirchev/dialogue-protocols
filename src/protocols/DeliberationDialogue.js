@@ -9,6 +9,13 @@ class DeliberationDialogue extends Dialogue {
     super(agents);
 
     this.agreedPreferenceRule = 'acceptableRestaurant(X):-';
+    this.agreedPreferenceRuleHistory = [this.agreedPreferenceRule];
+  }
+
+  saveCommitmentStores() {
+    super.saveCommitmentStores();
+
+    this.agreedPreferenceRuleHistory.push(this.agreedPreferenceRule);
   }
 
   isOver() {
