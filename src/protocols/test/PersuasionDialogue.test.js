@@ -16,8 +16,8 @@ describe('Persuasion Dialogue', () => {
           const persuasionDialogue = createPersuasionDialogue();
 
           expect(() => {
-            persuasionDialogue.claim(persuasionDialogue.agents[1], 'quality(restaurantOne,good).');
-          }).toThrow('Pre-conditions of agent two claiming "restaurant one has property quality of value good" are not satisfied because the agent cannot demonstrate the claim through their knowledge base and commitment store!');
+            persuasionDialogue.claim(persuasionDialogue.agents[1], 'quality(restaurantOne,poor).');
+          }).toThrow('Pre-conditions of agent two claiming "restaurant one has property quality of value poor" are not satisfied because the agent cannot demonstrate the claim through their knowledge base and commitment store!');
         });
       });
 
@@ -92,8 +92,8 @@ describe('Persuasion Dialogue', () => {
             const persuasionDialogue = createPersuasionDialogue('restaurantTwo');
 
             expect(() => {
-              persuasionDialogue.claim(persuasionDialogue.agents[0], 'recommended(restaurantThree,students).');
-            }).toThrow('Pre-conditions of agent one claiming "restaurant three has property recommended of value students" are not satisfied because the restaurant is not preferable to any other agent!');
+              persuasionDialogue.claim(persuasionDialogue.agents[0], '\\+(healthy(restaurantThree)).');
+            }).toThrow('Pre-conditions of agent one claiming "restaurant three lacks property healthy" are not satisfied because the restaurant is not preferable to any other agent!');
           });
         });
       });
@@ -241,12 +241,12 @@ describe('Persuasion Dialogue', () => {
 
         it('Fails if the agent\'s commitment store contains the negation of the claim', () => {
           const persuasionDialogue = createPersuasionDialogue();
-          persuasionDialogue.claim(persuasionDialogue.agents[1], '\\+(quality(restaurantOne,good)).');
-          persuasionDialogue.claim(persuasionDialogue.agents[0], 'quality(restaurantOne,good).');
+          persuasionDialogue.claim(persuasionDialogue.agents[1], '\\+(healthy(restaurantOne)).');
+          persuasionDialogue.claim(persuasionDialogue.agents[0], 'healthy(restaurantOne).');
 
           expect(() => {
-            persuasionDialogue.concede(persuasionDialogue.agents[1], 'quality(restaurantOne,good).');
-          }).toThrow('Pre-conditions of agent two conceding to "restaurant one has property quality of value good" are not satisfied because the agent\'s commitment store contains the negation of the claim!');
+            persuasionDialogue.concede(persuasionDialogue.agents[1], 'healthy(restaurantOne).');
+          }).toThrow('Pre-conditions of agent two conceding to "restaurant one has property healthy" are not satisfied because the agent\'s commitment store contains the negation of the claim!');
         });
       });
 
@@ -274,10 +274,10 @@ describe('Persuasion Dialogue', () => {
         describe('Proponent', () => {
           it('Passes if the claim corresponds to a feature in the body of the agent\'s preference rule', () => {
             const persuasionDialogue = createPersuasionDialogue();
-            persuasionDialogue.claim(persuasionDialogue.agents[0], 'cuisine(restaurantTwo,cuisineTwo).');
+            persuasionDialogue.claim(persuasionDialogue.agents[0], '\\+(cuisine(restaurantOne,cuisineTwo)).');
 
             expect(() => {
-              persuasionDialogue.concede(persuasionDialogue.agents[1], 'cuisine(restaurantTwo,cuisineTwo).');
+              persuasionDialogue.concede(persuasionDialogue.agents[1], '\\+(cuisine(restaurantOne,cuisineTwo)).');
             }).not.toThrow();
           });
 
@@ -343,7 +343,7 @@ describe('Persuasion Dialogue', () => {
 
         it('Fails if the agent can demonstrate the claim through their knowledge base and remaining commitment store', () => {
           const persuasionDialogue = createPersuasionDialogue();
-          persuasionDialogue.claim(persuasionDialogue.agents[0], 'recommended(restaurantThree,students).');
+          persuasionDialogue.claim(persuasionDialogue.agents[2], 'recommended(restaurantThree,students).');
           persuasionDialogue.concede(persuasionDialogue.agents[1], 'recommended(restaurantThree,students).');
 
           expect(() => {

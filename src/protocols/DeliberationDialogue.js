@@ -193,7 +193,7 @@ class DeliberationDialogue extends Dialogue {
     this.saveCommitmentStores();
   }
 
-  // Since(ag_i, l, ∏) | ConcedingSince(ag_i, g(a), p(a))
+  // Since(ag_i, l, ∏) | Concede-Since(ag_i, g(a), p(a))
   since(agent, otherAgent, term, justifications) {
     const restaurant = term.match(/([A-Za-z0-9])+/g)[1];
     const prologSession = pl.create();
@@ -268,7 +268,7 @@ class DeliberationDialogue extends Dialogue {
 
       this.text += `${agent.name}: ${translate(term)} since ${format(bodyOfRuleOfClaim.split('),'))}.\n`;
     } else {
-      // ConcedingSince(ag_i, g(a), p(a))
+      // Concede-Since(ag_i, g(a), p(a))
 
       /* TYPE-SPECIFIC PRE-CONDITIONS */
 

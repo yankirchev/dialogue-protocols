@@ -8,7 +8,7 @@ function createPersuasionDialogue(agentThreesInitialPreference) {
   let knowledgeBaseOne = '', knowledgeBaseTwo = '', knowledgeBaseThree = '';
 
   for (const [index, line] of generalKnowledgeBase.split('\n').entries()) {
-    if ([11, 15, 16, 23, 24, 26, 6, 18, 19, 29].includes(index)) {
+    if ([11, 15, 23, 24, 6, 18, 19, 29].includes(index)) {
       knowledgeBaseOne += `${line}\n`;
     }
 
@@ -28,7 +28,7 @@ function createPersuasionDialogue(agentThreesInitialPreference) {
   ], 1);
 }
 
-function createDeliberationDialogue() {
+function createDeliberationDialogue(agentThreesInitialPreference) {
   let knowledgeBaseOne = '', knowledgeBaseTwo = '', knowledgeBaseThree = '';
 
   for (const [index, line] of generalKnowledgeBase.split('\n').entries()) {
@@ -36,11 +36,11 @@ function createDeliberationDialogue() {
       knowledgeBaseOne += `${line}\n`;
     }
 
-    if ([11, 12, 13, 14, 15, 16, 22, 25, 6, 18, 19, 20, 21, 30, 34].includes(index)) {
+    if ([8, 12, 13, 14, 15, 16, 22, 25, 26, 7, 6, 18, 19, 20, 21, 30, 34].includes(index)) {
       knowledgeBaseTwo += `${line}\n`;
     }
 
-    if ([1, 2, 8, 10, 23, 26, 6, 28, 36, 31, 35].includes(index)) {
+    if ([1, 2, 8, 10, 23, 26, 6, 7, 28, 36, 31, 35].includes(index)) {
       knowledgeBaseThree += `${line}\n`;
     }
   }
@@ -48,7 +48,7 @@ function createDeliberationDialogue() {
   return new DeliberationDialogue([
     new Agent('agent one', 'restaurantOne', knowledgeBaseOne),
     new Agent('agent two', 'restaurantTwo', knowledgeBaseTwo),
-    new Agent('agent three', 'restaurantThree', knowledgeBaseThree)
+    new Agent('agent three', agentThreesInitialPreference ? agentThreesInitialPreference : 'restaurantThree', knowledgeBaseThree)
   ]);
 }
 
