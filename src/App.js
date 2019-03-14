@@ -36,7 +36,7 @@ class App extends Component {
           <div className="bx--grid">
             <div className="bx--row">
               <div className="bx--offset-md-1 bx--col-md-10 bx--offset-xl-2 bx--col-xl-8">
-                <h1 className="header">Diner's Discourse</h1>
+                <h1 className="header">Diners' Discourse</h1>
               </div>
             </div>
           </div>
@@ -73,7 +73,7 @@ class App extends Component {
             <Generate />
           </div>
         </div>
-        <footer class="bx--footer bx--footer--bottom-fixed footer">
+        <footer className="bx--footer bx--footer--bottom-fixed footer">
           <div className="bx--footer-info">
             <div className="bx--footer-info__item">
               <p className="bx--footer-label">Copyright &copy; Yanko Kirchev 2019</p>
