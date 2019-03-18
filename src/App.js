@@ -1,6 +1,7 @@
 import React, { Component } from 'react';
 import { Button, ContentSwitcher, Link, Switch } from 'carbon-components-react';
 
+import Background from './Background';
 import Generate from './Generate';
 import Home from './Home';
 
@@ -55,19 +56,7 @@ class App extends Component {
             <Home />
           </div>
           <div hidden={this.state.switchIndex !== 1}>
-            <div className="bx--row">
-              <div className="bx--offset-md-1 bx--col-md-10 bx--offset-xl-2 bx--col-xl-8">
-                <div className="heading"></div>
-                <h2 className="heading">TBA</h2>
-              </div>
-            </div>
-            <div className="bx--row">
-              <div className="bx--offset-md-1 bx--col-md-10 bx--offset-xl-2 bx--col-xl-8">
-                <p className="paragraph">
-                  TBA
-                </p>
-              </div>
-            </div>
+            <Background />
           </div>
           <div hidden={this.state.switchIndex !== 2}>
             <Generate />
