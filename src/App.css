@@ -25,8 +25,8 @@ Button.announcement:hover {
   color: #272d33;
 }
 
-.bx--grid {
-  max-width: 1600px !important;
+div.bx--grid {
+  max-width: 1600px;
 }
 
 div.header {
@@ -57,11 +57,7 @@ div.heading {
 }
 
 h2.heading {
-  margin-bottom: 2rem;
-}
-
-p.paragraph {
-  margin-top: 1rem;
+  margin-bottom: 2.5rem;
 }
 
 footer.footer {

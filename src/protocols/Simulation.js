@@ -19,6 +19,9 @@ class Simulation {
       .replace(/cuisineTwo/g, camelise(restaurantCuisines[1]))
       .replace(/cuisineThree/g, camelise(restaurantCuisines[2]))
       .replace(/beverage/g, camelise(beverage));
+
+    this.persuasionDialogue = this.simulatePersuasionDialogue();
+    this.deliberationDialogue = this.simulateDeliberationDialogue();
   }
 
   simulatePersuasionDialogue() {
@@ -138,19 +141,6 @@ class Simulation {
     } else {
       throw new Error('Deliberation dialogue has not reached an end state!');
     }
-  }
-
-  printAll(dialogue) {
-    console.log(dialogue.text);
-    console.log(dialogue.commitmentStoreHistory);
-
-    for (const agent of dialogue.agents) {
-      console.log(agent.name);
-      console.log(agent.knowledgeBase);
-      console.log(agent.commitmentDependencies);
-    }
-
-    console.log('Agreed preference rule: ' + dialogue.agreedPreferenceRule);
   }
 }
 

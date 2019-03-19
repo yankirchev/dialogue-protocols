@@ -16,18 +16,19 @@ class Background extends Component {
         </div>
         <div className="bx--row">
           <div className="bx--offset-md-1 bx--col-md-10 bx--offset-xl-2 bx--col-xl-8">
-            <p className="paragraph">
+            <p>
               Diners' Discourse is a web application developed by Yanko Kirchev in 2019
               as part of his Honours Year Computer Science Project—<em>Implementing Dialogue Protocols</em>—to
-              earn the degree of B.Sc. Hons. Computer Science with Year in Industry
-              at the Department of Computer Science in the University of Liverpool.
+              earn the degree of B.Sc. (Hons) Computer Science with Year in Industry
+              at the Department of Computer Science at the University of Liverpool.
             </p>
-            <p className="paragraph">
+            <p className="not-first">
               The application implements dialogue protocols for multi-agent systems
               based on the characterisations of persuasion and deliberation dialogues
-              established in (Atkinson et al., 2013), which draws out the essential differences between the two types.
+              established in (Atkinson et al., 2013),
+              which draws out the essential differences between the two types.
             </p>
-            <p className="paragraph">
+            <p className="not-first">
               Diners' Discourse uses the protocols to generate dialogues from the same set
               of predefined synthetic data (with some degree of customisation by the user),
               which are parallel to the dialogues set out in (Atkinson et al., 2013),
@@ -43,13 +44,13 @@ class Background extends Component {
         </div>
         <div className="bx--row">
           <div className="bx--offset-md-1 bx--col-md-10 bx--offset-xl-2 bx--col-xl-8">
-            <p className="paragraph">
-              The application is developed using the Node.js and React.js frameworks. The protocols rely heavily
-              on the Tau Prolog module—a Prolog interpreter written entirely in JavaScript—
+            <p>
+              The application is developed using the Node.js and React.js frameworks.
+              The protocols rely heavily on the Tau Prolog module—a Prolog interpreter written entirely in JavaScript—
               which brings the needed functionality for knowledge representation to Diners' Discourse.
             </p>
-            <p className="paragraph">
-              On the front-end's side, Carbon Design's React.js components are utiilised
+            <p className="not-first">
+              On the front-end's side, Carbon Design's React.js components are utilised
               to enable an efficient construction of the website while delivering a responsive UI.
             </p>
           </div>
@@ -88,31 +89,36 @@ class Background extends Component {
                 <StructuredListRow>
                   <StructuredListCell>Deliberation dialogue</StructuredListCell>
                   <StructuredListCell>
-                    A dialogue in which deliberation arises from a dilemma about what option is collectively acceptable
-                    where each party tries to find the best available course of action for the group as a whole
-                    (Walton and Krabbe, 1998).
+                    A dialogue in which deliberation arises from a dilemma
+                    about what option is collectively acceptable
+                    where each party tries to find the best available course of action
+                    for the group as a whole (Walton and Krabbe, 1998).
                   </StructuredListCell>
                 </StructuredListRow>
                 <StructuredListRow>
                   <StructuredListCell>Persuasion dialogue</StructuredListCell>
                   <StructuredListCell>
-                    A dialogue in which persuasion arises from a conflict of opinions on what the best available choice of action is
-                    where one party tries to persuade the other(s) towards their preferred option
-                    (Walton and Krabbe, 1998).
+                    A dialogue in which persuasion arises from a conflict of opinions
+                    on what the best available choice of action is
+                    where one party tries to persuade the other(s)
+                    towards their preferred option (Walton and Krabbe, 1998).
                   </StructuredListCell>
                 </StructuredListRow>
                 <StructuredListRow>
                   <StructuredListCell>Protocol</StructuredListCell>
                   <StructuredListCell>
-
+                    Rules by which a dialogue pans out.
+                    These can specify the allowed speech acts at any point,
+                    the effects of utterances on the participants’ commitments,
+                    the outcome of the dialogue, the turn-taking function,
+                    and the termination criteria (Prakken, 2006).
                   </StructuredListCell>
                 </StructuredListRow>
                 <StructuredListRow>
                   <StructuredListCell noWrap>Speech acts</StructuredListCell>
                   <StructuredListCell>
                     A set of moves which participating agents in a dialogue can make in regards to statements.
-                    They comprise "claim", "why", "concede", "retract", "since", and "question"
-                    (Prakken, 2006).
+                    They comprise "claim", "why", "concede", "retract", "since", and "question" (Prakken, 2006).
                   </StructuredListCell>
                 </StructuredListRow>
               </StructuredListBody>
@@ -129,7 +135,7 @@ class Background extends Component {
           <div className="bx--offset-md-1 bx--col-md-10 bx--offset-xl-2 bx--col-xl-8">
             <UnorderedList>
               <ListItem className="list-item reference">
-                Atkinson, K., Bench-Capon, T., & Walton, D. (2013):
+                Atkinson, K., Bench-Capon, T., & Walton, D. (2013).
                 Distinctive features of persuasion and deliberation dialogues.
                 <em> Argument and Computation</em>, 4(2), 105-127.
               </ListItem>

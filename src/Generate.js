@@ -108,12 +108,26 @@ class Generate extends Component {
             <div className="bx--row">
               <div className="bx--offset-md-1 bx--col-md-10 bx--offset-xl-2 bx--col-xl-8">
                 <div className="heading"></div>
+                <h2 className="heading">Customise</h2>
+              </div>
+            </div>
+            <div className="bx--row">
+              <div className="bx--offset-md-1 bx--col-md-10 bx--offset-xl-2 bx--col-xl-8">
+                <p>
+                  Use the form below to generate your own custom persuasion and deliberation dialogues.
+                  None of the information you provide will be stored.
+                </p>
+              </div>
+            </div>
+            <div className="bx--row">
+              <div className="bx--offset-md-1 bx--col-md-10 bx--offset-xl-2 bx--col-xl-8">
+                <div className="heading"></div>
                 <h2 className="heading">Agents' names</h2>
               </div>
             </div>
             <div className="bx--row">
               <div className="bx--offset-md-1 bx--col-md-10 bx--offset-xl-2 bx--col-xl-8">
-                <p className="generate">
+                <p className="description">
                   Choose names for the agents that will be participating in the dialogue.
                 </p>
               </div>
@@ -165,8 +179,8 @@ class Generate extends Component {
             </div>
             <div className="bx--row">
               <div className="bx--offset-md-1 bx--col-md-10 bx--offset-xl-2 bx--col-xl-8">
-                <p className="generate">
-                  Choose names for the restaurants which the dialogue will revolve around.
+                <p className="description">
+                  Choose names for the restaurants around which the dialogue will revolve.
                 </p>
               </div>
             </div>
@@ -217,7 +231,7 @@ class Generate extends Component {
             </div>
             <div className="bx--row">
               <div className="bx--offset-md-1 bx--col-md-10 bx--offset-xl-2 bx--col-xl-8">
-                <p className="generate">
+                <p className="description">
                   Pick the cuisines for each restaurant.
                 </p>
               </div>
@@ -275,7 +289,7 @@ class Generate extends Component {
             </div>
             <div className="bx--row">
               <div className="bx--offset-md-1 bx--col-md-10 bx--offset-xl-2 bx--col-xl-8">
-                <p className="generate">
+                <p className="description">
                   Pick the beverage which will be preferred by the agents.
                 </p>
               </div>
@@ -303,7 +317,7 @@ class Generate extends Component {
             </div>
             <div className="bx--row">
               <div className="bx--offset-md-1 bx--col-md-10 bx--offset-xl-2 bx--col-xl-8">
-                <p className="generate">
+                <p className="description">
                   Click the button below to generate your customised dialogues.
                   {this.state.isErrorNotificationVisible && (
                     <InlineNotification
@@ -328,11 +342,39 @@ class Generate extends Component {
         {this.state.simulation && (
           <div>
             <div className="bx--row">
+              <div className="bx--offset-md-1 bx--col-md-10 bx--offset-xl-2 bx--col-xl-8">
+                <div className="heading"></div>
+                <h2 className="heading">Remarks</h2>
+              </div>
+            </div>
+            <div className="bx--row">
+              <div className="bx--offset-md-1 bx--col-md-10 bx--offset-xl-2 bx--col-xl-8">
+                <p>
+                  Check out your custom dialogues below.
+                  You can observe the differences between the two types speech act by speech act,
+                  but you can also reveal their full lengths at any point.
+                </p>
+                <p className="not-first">
+                  While inspecting the persuasion dialogue, note how {this.state.simulation.agentNames[1]}
+                  &nbsp;asserts {this.state.simulation.restaurantNames[1]} as an acceptable choice at the very start.
+                  The agent then tries to prove that it is acceptable for the others
+                  as they make objections indicating points on which they wish to be convinced.
+                </p>
+                <p className="not-first">
+                  In the deliberation dialogue, on the other hand,&nbsp;
+                  {this.state.simulation.agentNames[1]} is not committed to his preferred option.
+                  Together with the others, the agent rather introduces properties
+                  which will later either be rejected or accepted
+                  as part of the collective rule of what constitutes an acceptable restaurant.
+                </p>
+              </div>
+            </div>
+            <div className="bx--row">
               <div className="bx--offset-md-1 bx--col-md-5 bx--offset-xl-2 bx--col-xl-4">
-                <DialogueAccordion dialogue={this.state.simulation.simulatePersuasionDialogue()} dialogueType="Persuasion" />
+                <DialogueAccordion dialogue={this.state.simulation.persuasionDialogue} dialogueType="Persuasion" />
               </div>
               <div className="bx--col-md-5 bx--col-xl-4">
-                <DialogueAccordion dialogue={this.state.simulation.simulateDeliberationDialogue()} dialogueType="Deliberation" />
+                <DialogueAccordion dialogue={this.state.simulation.deliberationDialogue} dialogueType="Deliberation" />
               </div>
             </div>
             <div className="bx--row">
@@ -343,7 +385,7 @@ class Generate extends Component {
             </div>
             <div className="bx--row">
               <div className="bx--offset-md-1 bx--col-md-10 bx--offset-xl-2 bx--col-xl-8">
-                <p className="generate">
+                <p className="description">
                   Click the button below to reset the dialogues and start over.
                 </p>
               </div>

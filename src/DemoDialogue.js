@@ -10,7 +10,7 @@ class DemoDialogue extends Component {
         <AccordionItem
           title={<div><strong>Jane</strong>: I wonder if Thai Palace has property healthy.
             <Tooltip triggerText="&nbsp;">
-              <p>Jane poses a question seeking information about Thai Palace and indicitaing that "quality" is a criterion she finds desirable.</p>
+              <p>Jane poses a question seeking information about Thai Palace and indicating that "quality" is a criterion she finds desirable.</p>
             </Tooltip>
           </div>}
         >
