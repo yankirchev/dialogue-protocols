@@ -1,6 +1,6 @@
 {
   "name": "diners-discourse",
-  "version": "0.1.0",
+  "version": "1.0.0",
   "private": true,
   "dependencies": {
     "carbon-components": "^9.82.10",
@@ -20,7 +20,7 @@
   "scripts": {
     "start": "node-sass ./src/index.scss ./src/index.css && react-scripts start",
     "build": "node-sass ./src/index.scss ./src/index.css && react-scripts build",
-    "test": "react-scripts test --env=jsdom --verbose",
+    "test": "react-scripts test --env=jsdom --verbose --watchAll",
     "eject": "react-scripts eject",
     "predeploy": "npm run build",
     "deploy": "gh-pages -d build && rm -rf build"

@@ -1,44 +1,51 @@
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+## About
 
-## Available Scripts
+Diners' Discourse is a web application developed by Yanko Kirchev in 2019 as part of his Honours Year Computer Science Project—_Implementing Dialogue Protocols_—to earn the degree of B.Sc. (Hons) Computer Science with Year in Industry at the Department of Computer Science at the University of Liverpool.
 
-In the project directory, you can run:
+The applications implements dialogue protocols for multi-agent systems based on the characterisations of persuasion and deliberation dialogues established in (Atkinson et al., 2013), which draws out the essential differences between the two types. 
 
-### `npm start`
+The protocols are used to generate dialogues from the same set of predefined synthetic data (with some degree of customisation by the user), which are parallel to the dialogues set out in (Atkinson et al., 2013), and verifies that the protocols exhibit the expected results when put to practice. 
 
-Runs the app in the development mode.<br>
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
+Moreover, Diners' Discourse lets you observe the differences between the two types side-by-side and to peek into the commitment stores of the participating agents at any point.
 
-The page will reload if you make edits.<br>
-You will also see any lint errors in the console.
+## Project Architecture
 
-### `npm test`
+```
+public                // Public files
+src                   // Front-end scripts
+└── protocols         // Dialogue protocols
+    ├── test          // Protocols' tests
+    └── utils         // Protocols' utility files 
+```
 
-Launches the test runner in the interactive watch mode.<br>
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+## Running Locally
 
-### `npm run build`
+To run a development build, simply download the repository, change into its directory, install the required packages(`npm install`), and start it(`npm start`). You should be directed to `htpp://localhost:3000` in your browser shortly after.
 
-Builds the app for production to the `build` folder.<br>
-It correctly bundles React in production mode and optimizes the build for the best performance.
+## Testing
 
-The build is minified and the filenames include the hashes.<br>
-Your app is ready to be deployed!
+The tests use the `Jest` framework and are triggered by running `npm test`. The test cases cover every pre- and post-condition of every speech act for each type of dialogue.
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+## Implementation Details
 
-### `npm run eject`
+The application is developed using the Node.js and React.js frameworks. The protocols rely heavily on the Tau Prolog module—a Prolog interpreter written entirely in JavaScript— which brings the needed functionality for knowledge representation to Diners' Discourse.
 
-**Note: this is a one-way operation. Once you `eject`, you can’t go back!**
+On the front-end's side, Carbon Design's React.js components are utilised to enable an efficient construction of the website while delivering a responsive UI.
 
-If you aren’t satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+## Glossary
 
-Instead, it will copy all the configuration files and the transitive dependencies (Webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you’re on your own.
+|Term|Definition| 
+|----|----------|
+|Agent|An autonomous computer entity which learns and uses knowledge to execute independent actions towards achieving goals (Russel and Norvig, 2003).|
+Commitment Store|A set of statements to which an agent has become committed in the course of a dialogue (Atkinson et al., 2013).|
+Deliberation dialogue|A dialogue in which deliberation arises from a dilemma about what option is collectively acceptable where each party tries to find the best available course of action for the group as a whole (Walton and Krabbe, 1998).|
+Persuasion dialogue|A dialogue in which persuasion arises from a conflict of opinions on what the best available choice of action is where one party tries to persuade the other(s) towards their preferred option (Walton and Krabbe, 1998).|
+Protocol|Rules by which a dialogue pans out. These can specify the allowed speech acts at any point, the effects of utterances on the participants’ commitments, the outcome of the dialogue, the turn-taking function, and the termination criteria (Prakken, 2006).|
+Speech acts|A set of moves which participating agents in a dialogue can make in regards to statements. They comprise "claim", "why", "concede", "retract", "since", and "question" (Prakken, 2006).|
 
-You don’t have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn’t feel obligated to use this feature. However we understand that this tool wouldn’t be useful if you couldn’t customize it when you are ready for it.
+## References
 
-## Learn More
-
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
+- Atkinson, K., Bench-Capon, T., & Walton, D. (2013). Distinctive features of persuasion and deliberation dialogues. _Argument and Computation_, 4(2), 105-127.
+- Prakken, H. (2006). Formal Systems for Persuasion Dialogue. _The Knowledge Engineering Review_, 21(2), 163–188.
+- Russell S., & Norvig, P. (2003). _Artificial Intelligence: A Modern Approach (2nd ed.)_. Upper Saddle River, New Jersey: Prentice Hall.
+- Walton, D., & Krabbe, E. (1995). _Commitment in Dialogue: Basic Concepts of Interpersonal Reasoning_. Albany, New York: State University of New York Press.
