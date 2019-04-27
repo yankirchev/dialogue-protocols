@@ -40,6 +40,44 @@ describe('Persuasion Dialogue', () => {
         });
       });
 
+      describe('preferable(O, a)', () => {
+        describe('Opponent', () => {
+          it('Passes if the restaurant is preferable to the agent', () => {
+            const persuasionDialogue = createPersuasionDialogue();
+
+            expect(() => {
+              persuasionDialogue.claim(persuasionDialogue.agents[0], 'quality(restaurantOne,good).');
+            }).not.toThrow();
+          });
+
+          it('Fails if the restaurant is not preferable to the agent', () => {
+            const persuasionDialogue = createPersuasionDialogue();
+
+            expect(() => {
+              persuasionDialogue.claim(persuasionDialogue.agents[2], 'distance(restaurantTwo,10,_).');
+            }).toThrow('Pre-conditions of agent three claiming "restaurant two has property distance of value 10" are not satisfied because the restaurant is not preferable to the agent!');
+          });
+        });
+
+        describe('Proponent', () => {
+          it('Passes if the restaurant is preferable to the agent', () => {
+            const persuasionDialogue = createPersuasionDialogue();
+
+            expect(() => {
+              persuasionDialogue.claim(persuasionDialogue.agents[1], 'quality(restaurantTwo,good).');
+            }).not.toThrow();
+          });
+
+          it('Passes if the restaurant is not preferable to the agent', () => {
+            const persuasionDialogue = createPersuasionDialogue();
+
+            expect(() => {
+              persuasionDialogue.claim(persuasionDialogue.agents[1], 'price(restaurantOne,25).');
+            }).not.toThrow();
+          });
+        });
+      });
+
       describe('p(X) ∈ B, where B is the set of terms in the body of the preference rule of O', () => {
         describe('Opponent', () => {
           it('Passes if the claim corresponds to a feature in the body of the agent\'s preference rule', () => {
@@ -74,26 +112,6 @@ describe('Persuasion Dialogue', () => {
             expect(() => {
               persuasionDialogue.claim(persuasionDialogue.agents[1], 'quality(restaurantTwo,good).');
             }).not.toThrow();
-          });
-        });
-      });
-
-      describe('Counterclaim', () => {
-        describe('for some agent ag_j ≠ ag_i, preferable(ag_j, a)', () => {
-          it('Passes if the restaurant is preferable to some other agent', () => {
-            const persuasionDialogue = createPersuasionDialogue();
-
-            expect(() => {
-              persuasionDialogue.claim(persuasionDialogue.agents[1], 'price(restaurantOne,25).');
-            }).not.toThrow();
-          });
-
-          it('Fails if the restaurant is not preferable to any other agent', () => {
-            const persuasionDialogue = createPersuasionDialogue('restaurantTwo');
-
-            expect(() => {
-              persuasionDialogue.claim(persuasionDialogue.agents[0], '\\+(healthy(restaurantThree)).');
-            }).toThrow('Pre-conditions of agent one claiming "restaurant three lacks property healthy" are not satisfied because the restaurant is not preferable to any other agent!');
           });
         });
       });
@@ -159,6 +177,154 @@ describe('Persuasion Dialogue', () => {
             persuasionDialogue.claim(persuasionDialogue.agents[1], 'quality(restaurantTwo,good).');
 
             expect(persuasionDialogue.agents[1].commitmentStore).not.toContain('quality(X,good):-recommended(X,Y),trustworthy(Y).');
+          });
+        });
+      });
+    });
+  });
+
+  describe('Counterclaim', () => {
+    describe('Pre-conditions', () => {
+      describe('demo(∏_ag_i ∪ Com_ag_i, l)', () => {
+        it('Passes if the agent can demonstrate the claim', () => {
+          const persuasionDialogue = createPersuasionDialogue();
+
+          expect(() => {
+            persuasionDialogue.counterclaim(persuasionDialogue.agents[1], 'price(restaurantOne,25).');
+          }).not.toThrow();
+        });
+
+        it('Fails if the agent cannot demonstrate the claim', () => {
+          const persuasionDialogue = createPersuasionDialogue();
+
+          expect(() => {
+            persuasionDialogue.counterclaim(persuasionDialogue.agents[1], 'quality(restaurantOne,poor).');
+          }).toThrow('Pre-conditions of agent two counterclaiming "restaurant one has property quality of value poor" are not satisfied because the agent cannot demonstrate the claim through their knowledge base and commitment store!');
+        });
+      });
+
+      describe('¬l ∈ Com_ag_j for any ag_j ∈ Ag', () => {
+        it('Passes if no agent\'s commitment store contains the claim', () => {
+          const persuasionDialogue = createPersuasionDialogue();
+
+          expect(() => {
+            persuasionDialogue.counterclaim(persuasionDialogue.agents[1], 'price(restaurantOne,25).');
+          }).not.toThrow();
+        });
+
+        it('Fails if some agent\'s commitment store contains the claim', () => {
+          const persuasionDialogue = createPersuasionDialogue();
+          persuasionDialogue.counterclaim(persuasionDialogue.agents[1], 'price(restaurantOne,25).');
+
+          expect(() => {
+            persuasionDialogue.counterclaim(persuasionDialogue.agents[1], 'price(restaurantOne,25).');
+          }).toThrow('Pre-conditions of agent two counterclaiming "restaurant one has property price of value 25" are not satisfied because agent two\'s commitment store contains the claim!');
+        });
+      });
+
+      describe('¬preferable(O, a)', () => {
+        describe('Opponent', () => {
+          it('Passes if the restaurant is not preferable to the agent', () => {
+            const persuasionDialogue = createPersuasionDialogue();
+
+            expect(() => {
+              persuasionDialogue.counterclaim(persuasionDialogue.agents[2], 'distance(restaurantTwo,10,_).');
+            }).not.toThrow();
+          });
+
+          it('Fails if the restaurant is preferable to the agent', () => {
+            const persuasionDialogue = createPersuasionDialogue();
+
+            expect(() => {
+              persuasionDialogue.counterclaim(persuasionDialogue.agents[2], 'recommended(restaurantThree,students).');
+            }).toThrow('Pre-conditions of agent three counterclaiming "restaurant three has property recommended of value students" are not satisfied because the restaurant is preferable to the agent!');
+          });
+        });
+
+        describe('Proponent', () => {
+          it('Passes if the restaurant is not preferable to the agent', () => {
+            const persuasionDialogue = createPersuasionDialogue();
+
+            expect(() => {
+              persuasionDialogue.counterclaim(persuasionDialogue.agents[1], 'price(restaurantOne,25).');
+            }).not.toThrow();
+          });
+
+          it('Passes if the restaurant is preferable to the agent', () => {
+            const persuasionDialogue = createPersuasionDialogue();
+
+            expect(() => {
+              persuasionDialogue.counterclaim(persuasionDialogue.agents[1], 'quality(restaurantTwo,good).');
+            }).not.toThrow();
+          });
+        });
+      });
+
+      describe('p(X) ∈ B, where B is the set of terms in the body of the preference rule of O', () => {
+        describe('Opponent', () => {
+          it('Passes if the claim corresponds to a feature in the body of the agent\'s preference rule', () => {
+            const persuasionDialogue = createPersuasionDialogue();
+
+            expect(() => {
+              persuasionDialogue.counterclaim(persuasionDialogue.agents[2], 'distance(restaurantTwo,10,_).');
+            }).not.toThrow();
+          });
+
+          it('Fails if the claim does not correspond to a feature in the body of the agent\'s preference rule', () => {
+            const persuasionDialogue = createPersuasionDialogue();
+
+            expect(() => {
+              persuasionDialogue.counterclaim(persuasionDialogue.agents[0], '\\+(atmosphere(restaurantTwo)).');
+            }).toThrow('Pre-conditions of agent one counterclaiming "restaurant two lacks property atmosphere" are not satisfied because the claim does not correspond to a feature in the body of the agent\'s preference rule!');
+          });
+        });
+
+        describe('Proponent', () => {
+          it('Passes if the claim corresponds to a feature in the body of the agent\'s preference rule', () => {
+            const persuasionDialogue = createPersuasionDialogue();
+
+            expect(() => {
+              persuasionDialogue.counterclaim(persuasionDialogue.agents[1], '\\+(cuisine(restaurantOne,cuisineTwo)).');
+            }).not.toThrow();
+          });
+
+          it('Passes if the claim does not correspond to a feature in the body of the agent\'s preference rule', () => {
+            const persuasionDialogue = createPersuasionDialogue();
+
+            expect(() => {
+              persuasionDialogue.counterclaim(persuasionDialogue.agents[1], 'quality(restaurantThree,poor).');
+            }).not.toThrow();
+          });
+        });
+      });
+    });
+
+    describe('Post-conditions', () => {
+      describe('Com_ag_i ⇒ Com_ag_i ∪ l', () => {
+        it('Passes if the claim is added to the commitment store', () => {
+          const persuasionDialogue = createPersuasionDialogue();
+          persuasionDialogue.counterclaim(persuasionDialogue.agents[1], 'price(restaurantOne,25).');
+
+          expect(persuasionDialogue.agents[1].commitmentStore).toContain('price(restaurantOne,25).');
+        });
+      });
+
+      describe('Com_O ⇒ Com_O ∪ (p(X) ∈ B), where B is the set of terms in the body of the preference rule of O', () => {
+        describe('Opponent', () => {
+          it('Passes if p(X) ∈ B is added to the agent\'s commitment store', () => {
+            const persuasionDialogue = createPersuasionDialogue();
+            persuasionDialogue.counterclaim(persuasionDialogue.agents[0], '\\+(quality(restaurantTwo,good)).');
+
+            expect(persuasionDialogue.agents[0].commitmentStore).toContain('quality(X,good):-recommended(X,Y),trustworthy(Y).');
+          });
+        });
+
+        describe('Proponent', () => {
+          it('Passes if p(X) ∈ B is not added to the agent\'s commitment store', () => {
+            const persuasionDialogue = createPersuasionDialogue();
+            persuasionDialogue.counterclaim(persuasionDialogue.agents[1], 'quality(restaurantThree,poor).');
+
+            expect(persuasionDialogue.agents[1].commitmentStore).not.toContain('quality(X,poor):-recommended(X,students).');
           });
         });
       });

@@ -36,7 +36,7 @@ function createDeliberationDialogue(agentThreesInitialPreference) {
       knowledgeBaseOne += `${line}\n`;
     }
 
-    if ([8, 12, 13, 14, 15, 16, 22, 25, 26, 7, 6, 18, 19, 20, 21, 30, 34].includes(index)) {
+    if ([8, 9, 12, 13, 14, 15, 16, 22, 25, 26, 7, 6, 18, 19, 20, 21, 30, 34].includes(index)) {
       knowledgeBaseTwo += `${line}\n`;
     }
 

@@ -60,7 +60,7 @@ class DeliberationDialogue extends Dialogue {
     }
   }
 
-  // (Counter)Claim(ag_i, l) | (Counter)Claim(O, p(a))
+  // Claim(ag_i, l) | Claim(O, p(a))
   claim(agent, term) {
     const restaurant = term.match(/([A-Za-z0-9])+/g)[1];
     const property = term.match(/([A-Za-z0-9])+/g)[0];
@@ -88,20 +88,10 @@ class DeliberationDialogue extends Dialogue {
 
     /*  TYPE-SPECIFIC PRE-CONDITIONS */
 
+    // preferable(O, a)
     if (!agent.doesPrefer(restaurant)) {
-      // for some agent ag_j ≠ O, preferable(ag_j, a)
-      let isPreferableToAnotherAgent = false;
-
-      for (const otherAgent of this.agents) {
-        if (otherAgent !== agent && otherAgent.doesPrefer(restaurant)) {
-          isPreferableToAnotherAgent = true;
-        }
-      }
-
-      if (!isPreferableToAnotherAgent) {
-        throw new Error(`Pre-conditions of ${agent.name} claiming "${translate(term)}" are not satisfied because ` +
-          `the restaurant is not preferable to any other agent!`);
-      }
+      throw new Error(`Pre-conditions of ${agent.name} claiming "${translate(term)}" are not satisfied because ` +
+        `the restaurant is not preferable to the agent!`);
     }
 
     // p(X) ∈ B, where B is the set of terms in the body of the preference rule of O
@@ -141,230 +131,111 @@ class DeliberationDialogue extends Dialogue {
 
     /* TYPE-SPECIFIC POST-CONDITIONS */
 
-    if (agent.doesPrefer(restaurant)) {
-      // Com_O ⇒ Com_O ∪ acceptableRestaurant(a) iff demo(∏_O ∪ Com_O, acceptableRestaurant(a))
-      prologSession.query(`acceptableRestaurant(${restaurant}).`);
-      prologSession.answer(x => {
-        if (pl.format_answer(x) === 'true ;' && !agent.commitmentStore.includes(`acceptableRestaurant(${restaurant}).`)) {
-          agent.commitmentStore += `acceptableRestaurant(${restaurant}).\n`;
-        }
-      });
-    }
+    // Com_O ⇒ Com_O ∪ acceptableRestaurant(a) iff demo(∏_O ∪ Com_O, acceptableRestaurant(a))
+    prologSession.query(`acceptableRestaurant(${restaurant}).`);
+    prologSession.answer(x => {
+      if (pl.format_answer(x) === 'true ;' && !agent.commitmentStore.includes(`acceptableRestaurant(${restaurant}).`)) {
+        agent.commitmentStore += `acceptableRestaurant(${restaurant}).\n`;
+      }
+    });
 
     // Com_O ⇒ Com_O ∪ (p(X) ∈ B), where B is the set of terms in the body of the preference rule of O
-    let termsToAdd = [];
-
     for (const line of (agent.knowledgeBase + agent.commitmentStore).split('\n')) {
       if (new RegExp('^' + property + '\\(X(?=\\)|,[A-Z]|,' + term.match(/([A-Za-z0-9_])+/g)[2] + ')').test(line)) {
         if (!agent.commitmentStore.includes(line)) {
           agent.commitmentStore += `${line}\n`;
-        }
-
-        termsToAdd = termsToAdd.concat(line.match(/(?<=,|-|, \()([A-Za-z0-9])+(?=\()/g));
-      }
-    }
-
-    for (let i = 0; i < termsToAdd.length; i++) {
-      for (const line of agent.knowledgeBase.split('\n')) {
-        if (new RegExp('^' + termsToAdd[i] + '\\(').test(line)) {
-          if (line.match(/(?<=,|-|, \()([A-Za-z0-9])+(?=\()/g)) {
-            for (const match of line.match(/(?<=,|-|, \()([A-Za-z0-9])+(?=\()/g)) {
-              if (!termsToAdd.includes(match)) {
-                termsToAdd.push(match);
-              }
-            }
-          }
-
-          if (!agent.commitmentStore.includes(line) && !agent.commitmentDependencies.includes(line)) {
-            agent.commitmentDependencies += `${line}\n`;
-          }
         }
       }
     }
 
     /* UPDATE DIALOGUE TEXT AND UPDATE COMMITMENT STORE HISTORY */
 
-    if (agent.doesPrefer(restaurant)) {
-      this.text += `${agent.name}: ${translate(term)}.\n`;
-    } else {
-      this.text += `${agent.name}: But ${translate(term)}.\n`;
-    }
-
+    this.text += `${agent.name}: ${translate(term)}.\n`;
     this.saveCommitmentStores();
   }
 
-  // Since(ag_i, l, ∏) | Concede-Since(ag_i, g(a), p(a))
-  since(agent, otherAgent, term, justifications) {
-    const restaurant = term.match(/([A-Za-z0-9])+/g)[1];
+  // Counterclaim(ag_i, l) | Counterclaim(O, p(a))
+  counterclaim(agent, term) {
+    const property = term.match(/([A-Za-z0-9])+/g)[0];
+
+    /* GENERAL PRE-CONDITIONS */
+
+    // demo(∏_ag_i ∪ Com_ag_i, l)
     const prologSession = pl.create();
+    prologSession.consult(agent.knowledgeBase + agent.commitmentStore);
+    prologSession.query(term);
+    prologSession.answer(x => {
+      if (pl.format_answer(x) !== 'true ;') {
+        throw new Error(`Pre-conditions of ${agent.name} counterclaiming "${translate(term)}" are not satisfied because ` +
+          `the agent cannot demonstrate the claim through their knowledge base and commitment store!`);
+      }
+    });
 
-    let justificationsAsOneString = '';
-
-    for (const justification of justifications) {
-      justificationsAsOneString += `${justification}\n`;
+    // ¬l ∈ Com_ag_j for any ag_j ∈ Ag
+    for (const anyAgent of this.agents) {
+      if (anyAgent.commitmentStore.includes(term)) {
+        throw new Error(`Pre-conditions of ${agent.name} counterclaiming "${translate(term)}" are not satisfied because ` +
+          `${anyAgent.name}'s commitment store contains the claim!`);
+      }
     }
 
-    if (!/^acceptableRestaurant\(/.test(term)) {
-      // Since(ag_i, l, ∏)
+    /*  TYPE-SPECIFIC PRE-CONDITIONS */
 
-      /* GENERAL PRE-CONDITIONS */
+    // ¬preferable(O, a)
+    if (agent.doesPrefer(term.match(/([A-Za-z0-9])+/g)[1])) {
+      throw new Error(`Pre-conditions of ${agent.name} counterclaiming "${translate(term)}" are not satisfied because ` +
+        `the restaurant is preferable to the agent!`);
+    }
 
-      // l ∈ Com_ag_i
-      if (!agent.commitmentStore.includes(term)) {
-        throw new Error(`Pre-conditions of ${agent.name} offering reasoning for "${translate(term)}" are not satisfied because ` +
-          `the agent's commitment store does not contain the claim!`);
-      }
+    // p(X) ∈ B, where B is the set of terms in the body of the preference rule of O
+    let termsToCheck = [];
 
-      // demo(∏ ∪ Com_ag_j, l) for some ∏ ⊆ ∏_ag_i
-      for (const justification of justifications) {
-        if (!agent.knowledgeBase.includes(justification)) {
-          throw new Error(`Pre-conditions of ${agent.name} offering reasoning for "${translate(term)}" are not satisfied because ` +
-            `the agent's knowledge base does not contain all justifications!`);
-        }
-      }
-
-      prologSession.consult(justificationsAsOneString + otherAgent.commitmentStore + otherAgent.commitmentDependencies);
-      prologSession.query(term);
-      prologSession.answer(x => {
-        if (pl.format_answer(x) !== 'true ;') {
-          throw new Error(`Pre-conditions of ${agent.name} offering reasoning for "${translate(term)}" are not satisfied because ` +
-            `${otherAgent.name} cannot demonstrate the claim through the justifications and their commitment store!`);
-        }
-      });
-
-      /* GENERAL POST-CONDITIONS */
-
-      // Com_ag_i ⇒ Com_ag_i ∪ ∏
-      for (const justification of justifications) {
-        if (!agent.commitmentStore.includes(justification)) {
-          agent.commitmentStore += `${justification}\n`;
-        }
-      }
-
-      // Com_ag_j ⇒ Com_ag_j ∪ ∏
-      for (const justification of justifications) {
-        if (!otherAgent.commitmentStore.includes(justification)) {
-          otherAgent.commitmentStore += `${justification}\n`;
-        }
-      }
-
-      /* UPDATE DIALOGUE TEXT AND UPDATE COMMITMENT STORE HISTORY */
-
-      let bodyOfRuleOfClaim = justifications[0].split('-')[1].split(', ')[0].replace(/X/g, restaurant);
-
-      for (const match of bodyOfRuleOfClaim.match(/([A-Za-z0-9])+/g)) {
-        if (match[0] !== match[0].toLowerCase()) {
-          const prologSession = pl.create();
-          prologSession.consult(justificationsAsOneString + otherAgent.commitmentStore + otherAgent.commitmentDependencies);
-
-          if (bodyOfRuleOfClaim[bodyOfRuleOfClaim.length - 1] !== '.' && bodyOfRuleOfClaim[bodyOfRuleOfClaim.length - 2] !== '.') {
-            bodyOfRuleOfClaim = bodyOfRuleOfClaim + '.'
-          }
-
-          prologSession.query(bodyOfRuleOfClaim);
-          prologSession.answer(x => bodyOfRuleOfClaim = bodyOfRuleOfClaim.replace(match, pl.format_answer(x).split(" ")[2].replace(/,|\./g, ''))); // eslint-disable-line no-loop-func
-        }
-      }
-
-      this.text += `${agent.name}: ${translate(term)} since ${format(bodyOfRuleOfClaim.split('),'))}.\n`;
-    } else {
-      // Concede-Since(ag_i, g(a), p(a))
-
-      /* TYPE-SPECIFIC PRE-CONDITIONS */
-
-      // demo(∏_ag_i ∪ Com_ag_i ∪ p(a), g(a))
-      prologSession.consult(agent.knowledgeBase + agent.commitmentStore + justificationsAsOneString);
-      prologSession.query(term);
-      prologSession.answer(x => {
-        if (pl.format_answer(x) !== 'true ;') {
-          throw new Error(`Pre-conditions of ${agent.name} offering reasoning for "${translate(term)}" are not satisfied because ` +
-            `the agent cannot demonstrate the claim through their knowledge base, commitment store, and the justifications!`);
-        }
-      });
-
-      // p(a) ∈ Com_ag_j for some ag_j ≠ ag_i
-      let doesAppearGlobally = false;
-
-      for (const someAgent of this.agents) {
-        let doesAppearLocally = true;
-
-        for (const justification of justifications) {
-          if (someAgent !== agent && !someAgent.commitmentStore.includes(justification)) {
-            doesAppearLocally = false;
+    for (const line of agent.knowledgeBase.split('\n')) {
+      if (/^acceptableRestaurant\(X/.test(line)) {
+        for (const match of line.match(/(?<=,|-|, \()([A-Za-z0-9])+(?=\()/g)) {
+          if (!termsToCheck.includes(match)) {
+            termsToCheck.push(match);
           }
         }
-
-        if (someAgent !== agent && doesAppearLocally === true) {
-          doesAppearGlobally = true;
-        }
       }
+    }
 
-      if (doesAppearGlobally === false) {
-        throw new Error(`Pre-conditions of ${agent.name} offering reasoning for "${translate(term)}" are not satisfied because ` +
-          `no other agent's commitment store contains the justifications!`);
-      }
-
-      /* ADD JUSTIFICATIONS TO BODY OF AGREED PREFERENCE RULE */
-
-      for (const justification of justifications) {
-        this.addTermToAgreedPreferenceRule(justification);
-      }
-
-      /* GENERAL POST-CONDITIONS */
-
-      // Com_ag_i ⇒ Com_ag_i ∪ ∏
-      for (const justification of justifications) {
-        if (!agent.commitmentStore.includes(justification)) {
-          agent.commitmentStore += `${justification}\n`;
-        }
-      }
-
-      /* TYPE-SPECIFIC POST-CONDITIONS */
-
-      // Com_O ⇒ Com_O ∪ p(X) ∈ B, where B is the set of terms in the body of the agreed preference rule
-      for (const justification of justifications) {
-        let termsToAdd = [];
-
-        for (const line of (agent.knowledgeBase + agent.commitmentStore).split('\n')) {
-          if (new RegExp('^' + justification.match(/([A-Za-z0-9_])+/g)[0] + '\\(X(?=\\)|,[A-Z]|,' + justification.match(/([A-Za-z0-9_])+/g)[2] + ')').test(line)) {
-            if (!agent.commitmentStore.includes(line)) {
-              agent.commitmentStore += `${line}\n`;
-            }
-
-            termsToAdd = termsToAdd.concat(line.match(/(?<=,|-|, \()([A-Za-z0-9])+(?=\()/g));
-          }
-        }
-
-        for (let i = 0; i < termsToAdd.length; i++) {
-          for (const line of agent.knowledgeBase.split('\n')) {
-            if (new RegExp('^' + termsToAdd[i] + '\\(').test(line)) {
-              if (line.match(/(?<=,|-|, \()([A-Za-z0-9])+(?=\()/g)) {
-                for (const match of line.match(/(?<=,|-|, \()([A-Za-z0-9])+(?=\()/g)) {
-                  if (!termsToAdd.includes(match)) {
-                    termsToAdd.push(match);
-                  }
-                }
-              }
-
-              if (!agent.commitmentStore.includes(line) && !agent.commitmentDependencies.includes(line)) {
-                agent.commitmentDependencies += `${line}\n`;
-              }
+    for (let i = 0; i < termsToCheck.length; i++) {
+      for (const line of agent.knowledgeBase.split('\n')) {
+        if (new RegExp('^' + termsToCheck[i] + '\\(X').test(line)) {
+          for (const match of line.match(/(?<=,|-|, \()([A-Za-z0-9])+(?=\()/g)) {
+            if (!termsToCheck.includes(match)) {
+              termsToCheck.push(match);
             }
           }
         }
       }
-
-      this.text += `${agent.name}: Since ${format(justifications)}, that makes ${decamelise(restaurant)} an acceptable restaurant. `;
-
-      const uninstatitatedJustifications = [];
-
-      for (let i = 0; i < justifications.length; i++) {
-        uninstatitatedJustifications.push(justifications[i].replace(justifications[i].match(/([A-Za-z0-9])+/g)[1], '_'));
-      }
-
-      this.text += `We want to go to a restaurant with ${format(uninstatitatedJustifications)}.\n`;
     }
 
+    if (!termsToCheck.includes(property)) {
+      throw new Error(`Pre-conditions of ${agent.name} counterclaiming "${translate(term)}" are not satisfied because ` +
+        `the claim does not correspond to a feature in the body of the agent's preference rule!`);
+    }
+
+    /* GENERAL POST-CONDITIONS */
+
+    // Com_ag_i ⇒ Com_ag_i ∪ l
+    agent.commitmentStore += `${term}\n`;
+
+    /* TYPE-SPECIFIC POST-CONDITIONS */
+
+    // Com_O ⇒ Com_O ∪ (p(X) ∈ B), where B is the set of terms in the body of the preference rule of O
+    for (const line of (agent.knowledgeBase + agent.commitmentStore).split('\n')) {
+      if (new RegExp('^' + property + '\\(X(?=\\)|,[A-Z]|,' + term.match(/([A-Za-z0-9_])+/g)[2] + ')').test(line)) {
+        if (!agent.commitmentStore.includes(line)) {
+          agent.commitmentStore += `${line}\n`;
+        }
+      }
+    }
+
+    /* UPDATE DIALOGUE TEXT AND UPDATE COMMITMENT STORE HISTORY */
+
+    this.text += `${agent.name}: But ${translate(term)}.\n`;
     this.saveCommitmentStores();
   }
 
@@ -409,32 +280,10 @@ class DeliberationDialogue extends Dialogue {
     /* TYPE-SPECIFIC POST-CONDITIONS */
 
     // Com_O ⇒ Com_O ∪ p(X) ∈ B, where B is the set of terms in the body of the agreed preference rule
-    let termsToAdd = [];
-
     for (const line of (agent.knowledgeBase + agent.commitmentStore).split('\n')) {
       if (new RegExp('^' + property + '\\(X(?=\\)|,[A-Z]|,' + term.match(/([A-Za-z0-9_])+/g)[2] + ')').test(line)) {
         if (!agent.commitmentStore.includes(line)) {
           agent.commitmentStore += `${line}\n`;
-        }
-
-        termsToAdd = termsToAdd.concat(line.match(/(?<=,|-|, \()([A-Za-z0-9])+(?=\()/g));
-      }
-    }
-
-    for (let i = 0; i < termsToAdd.length; i++) {
-      for (const line of agent.knowledgeBase.split('\n')) {
-        if (new RegExp('^' + termsToAdd[i] + '\\(').test(line)) {
-          if (line.match(/(?<=,|-|, \()([A-Za-z0-9])+(?=\()/g)) {
-            for (const match of line.match(/(?<=,|-|, \()([A-Za-z0-9])+(?=\()/g)) {
-              if (!termsToAdd.includes(match)) {
-                termsToAdd.push(match);
-              }
-            }
-          }
-
-          if (!agent.commitmentStore.includes(line) && !agent.commitmentDependencies.includes(line)) {
-            agent.commitmentDependencies += `${line}\n`;
-          }
         }
       }
     }
@@ -447,6 +296,87 @@ class DeliberationDialogue extends Dialogue {
       this.text += `${agent.name}: I accept that ${translate(term)}.\n`;
     }
 
+    this.saveCommitmentStores();
+  }
+
+  // Concede-Since(ag_i, g(a), p(a))
+  concedeSince(agent, term, justifications) {
+    let justificationsAsOneString = '';
+
+    for (const justification of justifications) {
+      justificationsAsOneString += `${justification}\n`;
+    }
+
+    /* TYPE-SPECIFIC PRE-CONDITIONS */
+
+    // demo(∏_ag_i ∪ Com_ag_i ∪ p(a), g(a))
+    const prologSession = pl.create();
+    prologSession.consult(agent.knowledgeBase + agent.commitmentStore + justificationsAsOneString);
+    prologSession.query(term);
+    prologSession.answer(x => {
+      if (pl.format_answer(x) !== 'true ;') {
+        throw new Error(`Pre-conditions of ${agent.name} conceding to and offering reasoning for "${translate(term)}" are not satisfied because ` +
+          `the agent cannot demonstrate the claim through their knowledge base, commitment store, and the justifications!`);
+      }
+    });
+
+    // p(a) ∈ Com_ag_j for some ag_j ≠ ag_i
+    let doesAppearGlobally = false;
+
+    for (const someAgent of this.agents) {
+      let doesAppearLocally = true;
+
+      for (const justification of justifications) {
+        if (someAgent !== agent && !someAgent.commitmentStore.includes(justification)) {
+          doesAppearLocally = false;
+        }
+      }
+
+      if (someAgent !== agent && doesAppearLocally === true) {
+        doesAppearGlobally = true;
+      }
+    }
+
+    if (doesAppearGlobally === false) {
+      throw new Error(`Pre-conditions of ${agent.name} conceding to and offering reasoning for "${translate(term)}" are not satisfied because ` +
+        `no other agent's commitment store contains the justifications!`);
+    }
+
+    /* ADD JUSTIFICATIONS TO BODY OF AGREED PREFERENCE RULE */
+
+    for (const justification of justifications) {
+      this.addTermToAgreedPreferenceRule(justification);
+    }
+
+    /* TYPE-SPECIFIC POST-CONDITIONS */
+
+    // Com_ag_i ⇒ Com_ag_i ∪ p(a)
+    for (const justification of justifications) {
+      if (!agent.commitmentStore.includes(justification)) {
+        agent.commitmentStore += `${justification}\n`;
+      }
+    }
+
+    // Com_O ⇒ Com_O ∪ p(X) ∈ B, where B is the set of terms in the body of the agreed preference rule
+    for (const justification of justifications) {
+      for (const line of (agent.knowledgeBase + agent.commitmentStore).split('\n')) {
+        if (new RegExp('^' + justification.match(/([A-Za-z0-9_])+/g)[0] + '\\(X(?=\\)|,[A-Z]|,' + justification.match(/([A-Za-z0-9_])+/g)[2] + ')').test(line)) {
+          if (!agent.commitmentStore.includes(line)) {
+            agent.commitmentStore += `${line}\n`;
+          }
+        }
+      }
+    }
+
+    this.text += `${agent.name}: Since ${format(justifications)}, that makes ${decamelise(term.match(/([A-Za-z0-9])+/g)[1])} an acceptable restaurant. `;
+
+    const uninstatitatedJustifications = [];
+
+    for (let i = 0; i < justifications.length; i++) {
+      uninstatitatedJustifications.push(justifications[i].replace(justifications[i].match(/([A-Za-z0-9])+/g)[1], '_'));
+    }
+
+    this.text += `We want to go to a restaurant with ${format(uninstatitatedJustifications)}.\n`;
     this.saveCommitmentStores();
   }
 }

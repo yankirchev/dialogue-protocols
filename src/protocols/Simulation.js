@@ -49,20 +49,20 @@ class Simulation {
 
     persuasionDialogue.claim(persuasionDialogue.agents[1], `acceptableRestaurant(${camelise(this.restaurantNames[1])}).`);
     persuasionDialogue.claim(persuasionDialogue.agents[1], `cuisine(${camelise(this.restaurantNames[1])},${camelise(this.restaurantCuisines[1])}).`);
-    persuasionDialogue.claim(persuasionDialogue.agents[2], `distance(${camelise(this.restaurantNames[1])},10,_).`);
+    persuasionDialogue.counterclaim(persuasionDialogue.agents[2], `distance(${camelise(this.restaurantNames[1])},10,_).`);
     persuasionDialogue.claim(persuasionDialogue.agents[1], `quality(${camelise(this.restaurantNames[1])},good).`);
     persuasionDialogue.claim(persuasionDialogue.agents[2], `recommended(${camelise(this.restaurantNames[2])},students).`);
     persuasionDialogue.question(persuasionDialogue.agents[2], `quality(${camelise(this.restaurantNames[2])},good).`);
     persuasionDialogue.concede(persuasionDialogue.agents[1], `recommended(${camelise(this.restaurantNames[2])},students).`);
-    persuasionDialogue.claim(persuasionDialogue.agents[1], `quality(${camelise(this.restaurantNames[2])},poor).`);
+    persuasionDialogue.counterclaim(persuasionDialogue.agents[1], `quality(${camelise(this.restaurantNames[2])},poor).`);
     persuasionDialogue.claim(persuasionDialogue.agents[0], `quality(${camelise(this.restaurantNames[0])},good).`);
     persuasionDialogue.claim(persuasionDialogue.agents[0], `healthy(${camelise(this.restaurantNames[0])}).`);
     persuasionDialogue.claim(persuasionDialogue.agents[1], `healthy(${camelise(this.restaurantNames[1])}).`);
     persuasionDialogue.claim(persuasionDialogue.agents[1], `price(${camelise(this.restaurantNames[1])},15).`);
-    persuasionDialogue.claim(persuasionDialogue.agents[1], `price(${camelise(this.restaurantNames[0])},25).`);
-    persuasionDialogue.claim(persuasionDialogue.agents[2], `distance(${camelise(this.restaurantNames[1])},_,10).`);
+    persuasionDialogue.counterclaim(persuasionDialogue.agents[1], `price(${camelise(this.restaurantNames[0])},25).`);
+    persuasionDialogue.counterclaim(persuasionDialogue.agents[2], `distance(${camelise(this.restaurantNames[1])},_,10).`);
     persuasionDialogue.concede(persuasionDialogue.agents[1], `distance(${camelise(this.restaurantNames[1])},_,10).`);
-    persuasionDialogue.claim(persuasionDialogue.agents[1], `\\+(cheaper(${camelise(this.restaurantNames[0])},${camelise(this.restaurantNames[1])})).`);
+    persuasionDialogue.counterclaim(persuasionDialogue.agents[1], `\\+(cheaper(${camelise(this.restaurantNames[0])},${camelise(this.restaurantNames[1])})).`);
     persuasionDialogue.concede(persuasionDialogue.agents[2], `acceptableRestaurant(${camelise(this.restaurantNames[1])}).`);
     persuasionDialogue.concede(persuasionDialogue.agents[0], `acceptableRestaurant(${camelise(this.restaurantNames[1])}).`);
 
@@ -105,26 +105,26 @@ class Simulation {
     ]);
 
     deliberationDialogue.claim(deliberationDialogue.agents[1], `cuisine(${camelise(this.restaurantNames[1])},${camelise(this.restaurantCuisines[1])}).`);
-    deliberationDialogue.claim(deliberationDialogue.agents[2], `distance(${camelise(this.restaurantNames[1])},10,_).`);
+    deliberationDialogue.counterclaim(deliberationDialogue.agents[2], `distance(${camelise(this.restaurantNames[1])},10,_).`);
     deliberationDialogue.claim(deliberationDialogue.agents[2], `distance(${camelise(this.restaurantNames[2])},1,0).`);
     deliberationDialogue.claim(deliberationDialogue.agents[0], `distance(${camelise(this.restaurantNames[0])},_,0).`);
     deliberationDialogue.claim(deliberationDialogue.agents[0], `quality(${camelise(this.restaurantNames[0])},good).`);
-    deliberationDialogue.claim(deliberationDialogue.agents[2], `price(${camelise(this.restaurantNames[0])},25).`);
+    deliberationDialogue.counterclaim(deliberationDialogue.agents[2], `price(${camelise(this.restaurantNames[0])},25).`);
     deliberationDialogue.claim(deliberationDialogue.agents[2], `price(${camelise(this.restaurantNames[2])},7).`);
-    deliberationDialogue.claim(deliberationDialogue.agents[1], `\\+(${camelise(this.beverage)}(${camelise(this.restaurantNames[2])})).`);
+    deliberationDialogue.counterclaim(deliberationDialogue.agents[1], `\\+(${camelise(this.beverage)}(${camelise(this.restaurantNames[2])})).`);
     deliberationDialogue.claim(deliberationDialogue.agents[1], `${camelise(this.beverage)}(${camelise(this.restaurantNames[1])}).`);
-    deliberationDialogue.claim(deliberationDialogue.agents[0], `\\+(atmosphere(${camelise(this.restaurantNames[2])})).`);
+    deliberationDialogue.counterclaim(deliberationDialogue.agents[0], `\\+(atmosphere(${camelise(this.restaurantNames[2])})).`);
     deliberationDialogue.claim(deliberationDialogue.agents[0], `atmosphere(${camelise(this.restaurantNames[0])}).`);
     deliberationDialogue.claim(deliberationDialogue.agents[1], `atmosphere(${camelise(this.restaurantNames[1])}).`);
     deliberationDialogue.claim(deliberationDialogue.agents[1], `quality(${camelise(this.restaurantNames[1])},good).`);
-    deliberationDialogue.claim(deliberationDialogue.agents[2], `distance(${camelise(this.restaurantNames[1])},_,10).`);
+    deliberationDialogue.counterclaim(deliberationDialogue.agents[2], `distance(${camelise(this.restaurantNames[1])},_,10).`);
     deliberationDialogue.claim(deliberationDialogue.agents[1], `healthy(${camelise(this.restaurantNames[1])}).`);
     deliberationDialogue.claim(deliberationDialogue.agents[0], `healthy(${camelise(this.restaurantNames[0])}).`);
-    deliberationDialogue.since(deliberationDialogue.agents[1], null, `acceptableRestaurant(${camelise(this.restaurantNames[0])}).`, [`quality(${camelise(this.restaurantNames[0])},good).`, `atmosphere(${camelise(this.restaurantNames[0])}).`]);
-    deliberationDialogue.since(deliberationDialogue.agents[2], null, `acceptableRestaurant(${camelise(this.restaurantNames[1])}).`, [`quality(${camelise(this.restaurantNames[1])},good).`, `atmosphere(${camelise(this.restaurantNames[1])}).`]);
+    deliberationDialogue.concedeSince(deliberationDialogue.agents[1], `acceptableRestaurant(${camelise(this.restaurantNames[0])}).`, [`quality(${camelise(this.restaurantNames[0])},good).`, `atmosphere(${camelise(this.restaurantNames[0])}).`]);
+    deliberationDialogue.concedeSince(deliberationDialogue.agents[2], `acceptableRestaurant(${camelise(this.restaurantNames[1])}).`, [`quality(${camelise(this.restaurantNames[1])},good).`, `atmosphere(${camelise(this.restaurantNames[1])}).`]);
     deliberationDialogue.concede(deliberationDialogue.agents[0], `${camelise(this.beverage)}(${camelise(this.restaurantNames[1])}).`);
     deliberationDialogue.claim(deliberationDialogue.agents[0], `${camelise(this.beverage)}(${camelise(this.restaurantNames[0])}).`);
-    deliberationDialogue.since(deliberationDialogue.agents[1], null, `acceptableRestaurant(${camelise(this.restaurantNames[0])}).`, [`distance(${camelise(this.restaurantNames[0])},_,0).`]);
+    deliberationDialogue.concedeSince(deliberationDialogue.agents[1], `acceptableRestaurant(${camelise(this.restaurantNames[0])}).`, [`distance(${camelise(this.restaurantNames[0])},_,0).`]);
     deliberationDialogue.concede(deliberationDialogue.agents[2], `acceptableRestaurant(${camelise(this.restaurantNames[0])}).`);
     deliberationDialogue.concede(deliberationDialogue.agents[1], `acceptableRestaurant(${camelise(this.restaurantNames[0])}).`);
 

@@ -23,6 +23,10 @@ class Dialogue {
     this.commitmentStoreHistory.push(newCommitmentStoresRecord);
   }
 
+  isOver() {
+    throw new TypeError('Need to implement function isOver!');
+  }
+
   // Claim(ag_i, l)
   claim(agent, term) {
     /*  PRE-CONDITIONS */
@@ -54,6 +58,40 @@ class Dialogue {
     /* UPDATE DIALOGUE TEXT AND UPDATE COMMITMENT STORE HISTORY */
 
     this.text += `${agent.name}: ${translate(term)}.\n`;
+    this.saveCommitmentStores();
+  }
+
+  // Counterclaim(ag_i, l)
+  counterclaim(agent, term) {
+    /*  PRE-CONDITIONS */
+
+    // demo(∏_ag_i ∪ Com_ag_i, l)
+    const prologSession = pl.create();
+    prologSession.consult(agent.knowledgeBase + agent.commitmentStore);
+    prologSession.query(term);
+    prologSession.answer(x => {
+      if (pl.format_answer(x) !== 'true ;') {
+        throw new Error(`Pre-conditions of ${agent.name} counterclaiming "${translate(term)}" are not satisfied because ` +
+          `the agent cannot demonstrate the claim through their knowledge base and commitment store!`);
+      }
+    });
+
+    // ¬l ∈ Com_ag_j for any ag_j ∈ Ag
+    for (const anyAgent of this.agents) {
+      if (anyAgent.commitmentStore.includes(term)) {
+        throw new Error(`Pre-conditions of ${agent.name} counterclaiming "${translate(term)}" are not satisfied because ` +
+          `${anyAgent.name}'s commitment store contains the claim!`);
+      }
+    }
+
+    /* POST-CONDITIONS */
+
+    // Com_ag_i ⇒ Com_ag_i ∪ l
+    agent.commitmentStore += `${term}\n`;
+
+    /* UPDATE DIALOGUE TEXT AND UPDATE COMMITMENT STORE HISTORY */
+
+    this.text += `${agent.name}: But ${translate(term)}.\n`;
     this.saveCommitmentStores();
   }
 
@@ -187,7 +225,7 @@ class Dialogue {
     }
 
     const prologSession = pl.create();
-    prologSession.consult(justificationsAsOneString + otherAgent.commitmentStore + otherAgent.commitmentDependencies);
+    prologSession.consult(justificationsAsOneString + otherAgent.commitmentStore);
     prologSession.query(term);
     prologSession.answer(x => {
       if (pl.format_answer(x) !== 'true ;') {
@@ -219,7 +257,7 @@ class Dialogue {
     for (const match of bodyOfRuleOfClaim.match(/([A-Za-z0-9])+/g)) {
       if (match[0] !== match[0].toLowerCase()) {
         const prologSession = pl.create();
-        prologSession.consult(justificationsAsOneString + otherAgent.commitmentStore + otherAgent.commitmentDependencies);
+        prologSession.consult(justificationsAsOneString + otherAgent.commitmentStore);
 
         if (bodyOfRuleOfClaim[bodyOfRuleOfClaim.length - 1] !== '.' && bodyOfRuleOfClaim[bodyOfRuleOfClaim.length - 2] !== '.') {
           bodyOfRuleOfClaim = bodyOfRuleOfClaim + '.'

@@ -6,7 +6,6 @@ class Agent {
     this.initialPreference = initialPreference;
     this.knowledgeBase = knowledgeBase;
     this.commitmentStore = '';
-    this.commitmentDependencies = '';
   }
 
   doesPrefer(restaurant) {

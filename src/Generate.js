@@ -115,7 +115,7 @@ class Generate extends Component {
               <div className="bx--offset-md-1 bx--col-md-10 bx--offset-xl-2 bx--col-xl-8">
                 <p>
                   Use the form below to generate your own custom persuasion and deliberation dialogues.
-                  None of the information you provide will be stored.
+                  None of the information you provide will be stored for future use by the system.
                 </p>
               </div>
             </div>
@@ -128,7 +128,7 @@ class Generate extends Component {
             <div className="bx--row">
               <div className="bx--offset-md-1 bx--col-md-10 bx--offset-xl-2 bx--col-xl-8">
                 <p className="description">
-                  Choose names for the agents that will be participating in the dialogue.
+                  Choose names for the agents that will be participating in the dialogues.
                 </p>
               </div>
             </div>
@@ -180,7 +180,7 @@ class Generate extends Component {
             <div className="bx--row">
               <div className="bx--offset-md-1 bx--col-md-10 bx--offset-xl-2 bx--col-xl-8">
                 <p className="description">
-                  Choose names for the restaurants around which the dialogue will revolve.
+                  Choose names for the restaurants around which the dialogues will revolve.
                 </p>
               </div>
             </div>
@@ -290,7 +290,7 @@ class Generate extends Component {
             <div className="bx--row">
               <div className="bx--offset-md-1 bx--col-md-10 bx--offset-xl-2 bx--col-xl-8">
                 <p className="description">
-                  Pick the beverage which will be preferred by the agents.
+                  Pick the beverage that will be preferred by the agents.
                 </p>
               </div>
             </div>
@@ -318,7 +318,7 @@ class Generate extends Component {
             <div className="bx--row">
               <div className="bx--offset-md-1 bx--col-md-10 bx--offset-xl-2 bx--col-xl-8">
                 <p className="description">
-                  Click the button below to generate your customised dialogues.
+                  Click the button below to generate your custom dialogues.
                   {this.state.isErrorNotificationVisible && (
                     <InlineNotification
                       hideCloseButton={true}
@@ -361,11 +361,10 @@ class Generate extends Component {
                   as they make objections indicating points on which they wish to be convinced.
                 </p>
                 <p className="not-first">
-                  In the deliberation dialogue, on the other hand,&nbsp;
-                  {this.state.simulation.agentNames[1]} is not committed to his preferred option.
-                  Together with the others, the agent rather introduces properties
-                  which will later either be rejected or accepted
-                  as part of the collective rule of what constitutes an acceptable restaurant.
+                  On the other hand, {this.state.simulation.agentNames[1]} is not committed
+                  to their preferred option in the deliberation dialogue.
+                  The agents rather collectively introduce properties that are later either rejected or accepted
+                  as part of an agreed rule of what constitutes an acceptable restaurant.
                 </p>
               </div>
             </div>

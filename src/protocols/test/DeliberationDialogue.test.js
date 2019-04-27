@@ -53,28 +53,8 @@ describe('Deliberation Dialogue', () => {
           const deliberationDialogue = createDeliberationDialogue();
 
           expect(() => {
-            deliberationDialogue.claim(deliberationDialogue.agents[1], 'price(restaurantOne,25).');
-          }).toThrow('Pre-conditions of agent two claiming "restaurant one has property price of value 25" are not satisfied because the claim does not correspond to a feature in the body of the agent\'s preference rule!');
-        });
-      });
-
-      describe('Counterclaim', () => {
-        describe('for some agent ag_j ≠ ag_i, preferable(ag_j, a)', () => {
-          it('Passes if the restaurant is preferable to some other agent', () => {
-            const deliberationDialogue = createDeliberationDialogue();
-
-            expect(() => {
-              deliberationDialogue.claim(deliberationDialogue.agents[1], '\\+(beverage(restaurantThree)).');
-            }).not.toThrow();
-          });
-
-          it('Fails if the restaurant is not preferable to any other agent', () => {
-            const deliberationDialogue = createDeliberationDialogue('restaurantTwo');
-
-            expect(() => {
-              deliberationDialogue.claim(deliberationDialogue.agents[0], '\\+(healthy(restaurantThree)).');
-            }).toThrow('Pre-conditions of agent one claiming "restaurant three lacks property healthy" are not satisfied because the restaurant is not preferable to any other agent!');
-          });
+            deliberationDialogue.claim(deliberationDialogue.agents[1], 'price(restaurantTwo,15).');
+          }).toThrow('Pre-conditions of agent two claiming "restaurant two has property price of value 15" are not satisfied because the claim does not correspond to a feature in the body of the agent\'s preference rule!');
         });
       });
     });
@@ -116,6 +96,103 @@ describe('Deliberation Dialogue', () => {
     });
   });
 
+  describe('Counterclaim', () => {
+    describe('Pre-conditions', () => {
+      describe('demo(∏_ag_i ∪ Com_ag_i, l)', () => {
+        it('Passes if the agent can demonstrate the claim', () => {
+          const deliberationDialogue = createDeliberationDialogue();
+
+          expect(() => {
+            deliberationDialogue.counterclaim(deliberationDialogue.agents[1], 'quality(restaurantThree,poor).');
+          }).not.toThrow();
+        });
+
+        it('Fails if the agent cannot demonstrate the claim', () => {
+          const deliberationDialogue = createDeliberationDialogue();
+
+          expect(() => {
+            deliberationDialogue.counterclaim(deliberationDialogue.agents[0], 'quality(restaurantThree,poor).');
+          }).toThrow('Pre-conditions of agent one counterclaiming "restaurant three has property quality of value poor" are not satisfied because the agent cannot demonstrate the claim through their knowledge base and commitment store!');
+        });
+      });
+
+      describe('¬l ∈ Com_ag_j for any ag_j ∈ Ag', () => {
+        it('Passes if no agent\'s commitment store contains the claim', () => {
+          const deliberationDialogue = createDeliberationDialogue();
+
+          expect(() => {
+            deliberationDialogue.counterclaim(deliberationDialogue.agents[1], 'quality(restaurantThree,poor).');
+          }).not.toThrow();
+        });
+
+        it('Fails if some agent\'s commitment store contains the claim', () => {
+          const deliberationDialogue = createDeliberationDialogue();
+          deliberationDialogue.counterclaim(deliberationDialogue.agents[1], 'quality(restaurantThree,poor).');
+
+          expect(() => {
+            deliberationDialogue.counterclaim(deliberationDialogue.agents[1], 'quality(restaurantThree,poor).');
+          }).toThrow('Pre-conditions of agent two counterclaiming "restaurant three has property quality of value poor" are not satisfied because agent two\'s commitment store contains the claim!');
+        });
+      });
+
+      describe('¬preferable(O, a)', () => {
+        it('Passes if the restaurant is not preferable to the agent', () => {
+          const deliberationDialogue = createDeliberationDialogue();
+
+          expect(() => {
+            deliberationDialogue.counterclaim(deliberationDialogue.agents[1], 'quality(restaurantThree,poor).');
+          }).not.toThrow();
+        });
+
+        it('Fails if the restaurant is preferable to the agent', () => {
+          const deliberationDialogue = createDeliberationDialogue();
+
+          expect(() => {
+            deliberationDialogue.counterclaim(deliberationDialogue.agents[2], 'recommended(restaurantThree,students).');
+          }).toThrow('Pre-conditions of agent three counterclaiming "restaurant three has property recommended of value students" are not satisfied because the restaurant is preferable to the agent!');
+        });
+      });
+
+      describe('p(X) ∈ B, where B is the set of terms in the body of the preference rule of O', () => {
+        it('Passes if the claim corresponds to a feature in the body of the agent\'s preference rule', () => {
+          const deliberationDialogue = createDeliberationDialogue();
+
+          expect(() => {
+            deliberationDialogue.counterclaim(deliberationDialogue.agents[2], 'distance(restaurantTwo,10,_).');
+          }).not.toThrow();
+        });
+
+        it('Fails if the claim does not correspond to a feature in the body of the agent\'s preference rule', () => {
+          const deliberationDialogue = createDeliberationDialogue();
+
+          expect(() => {
+            deliberationDialogue.counterclaim(deliberationDialogue.agents[1], 'price(restaurantOne,25).');
+          }).toThrow('Pre-conditions of agent two counterclaiming "restaurant one has property price of value 25" are not satisfied because the claim does not correspond to a feature in the body of the agent\'s preference rule!');
+        });
+      });
+    });
+
+    describe('Post-conditions', () => {
+      describe('Com_ag_i ⇒ Com_ag_i ∪ l', () => {
+        it('Passes if the claim is added to the commitment store', () => {
+          const deliberationDialogue = createDeliberationDialogue();
+          deliberationDialogue.counterclaim(deliberationDialogue.agents[0], '\\+(quality(restaurantTwo,good)).');
+
+          expect(deliberationDialogue.agents[0].commitmentStore).toContain('\\+(quality(restaurantTwo,good)).');
+        });
+      });
+
+      describe('Com_O ⇒ Com_O ∪ (p(X) ∈ B), where B is the set of terms in the body of the preference rule of O', () => {
+        it('Passes if p(X) ∈ B is added to the agent\'s commitment store', () => {
+          const deliberationDialogue = createDeliberationDialogue();
+          deliberationDialogue.counterclaim(deliberationDialogue.agents[0], '\\+(quality(restaurantTwo,good)).');
+
+          expect(deliberationDialogue.agents[0].commitmentStore).toContain('quality(X,good):-recommended(X,Y),trustworthy(Y).');
+        });
+      });
+    });
+  });
+
   describe('Why', () => {
     describe('Pre-conditions', () => {
       describe('not demo(∏_ag_i ∪ Com_ag_i, l)', () => {
@@ -130,7 +207,7 @@ describe('Deliberation Dialogue', () => {
 
         it('Fails if the agent can demonstrate the claim', () => {
           const deliberationDialogue = createDeliberationDialogue();
-          deliberationDialogue.claim(deliberationDialogue.agents[1], 'quality(restaurantThree,poor).');
+          deliberationDialogue.counterclaim(deliberationDialogue.agents[1], 'quality(restaurantThree,poor).');
 
           expect(() => {
             deliberationDialogue.why(deliberationDialogue.agents[2], 'quality(restaurantThree,poor).');
@@ -192,7 +269,7 @@ describe('Deliberation Dialogue', () => {
 
         it('Fails if the agent\'s commitment store contains the negation of the claim', () => {
           const deliberationDialogue = createDeliberationDialogue();
-          deliberationDialogue.claim(deliberationDialogue.agents[1], '\\+(quality(restaurantOne,good)).');
+          deliberationDialogue.counterclaim(deliberationDialogue.agents[1], '\\+(quality(restaurantOne,good)).');
           deliberationDialogue.claim(deliberationDialogue.agents[0], 'quality(restaurantOne,good).');
 
           expect(() => {
@@ -372,73 +449,73 @@ describe('Deliberation Dialogue', () => {
         });
       });
     });
+  });
 
-    describe('Concede-Since', () => {
-      describe('Pre-conditions', () => {
-        describe('demo(∏_ag_i ∪ Com_ag_i ∪ p(a), g(a))', () => {
-          it('Passes if the agent can demonstrate the claim through their knowledge base, commitment store and the justifications', () => {
-            const deliberationDialogue = createDeliberationDialogue();
-            deliberationDialogue.claim(deliberationDialogue.agents[0], 'quality(restaurantOne,good).');
-            deliberationDialogue.claim(deliberationDialogue.agents[0], 'atmosphere(restaurantOne).');
+  describe('Concede-Since', () => {
+    describe('Pre-conditions', () => {
+      describe('demo(∏_ag_i ∪ Com_ag_i ∪ p(a), g(a))', () => {
+        it('Passes if the agent can demonstrate the claim through their knowledge base, commitment store and the justifications', () => {
+          const deliberationDialogue = createDeliberationDialogue();
+          deliberationDialogue.claim(deliberationDialogue.agents[0], 'quality(restaurantOne,good).');
+          deliberationDialogue.claim(deliberationDialogue.agents[0], 'atmosphere(restaurantOne).');
 
-            expect(() => {
-              deliberationDialogue.since(deliberationDialogue.agents[1], null, 'acceptableRestaurant(restaurantOne).', ['quality(restaurantOne,good).', 'atmosphere(restaurantOne).']);
-            }).not.toThrow();
-          });
-
-          it('Fails if the agent cannot demonstrate the claim through their knowledge base, commitment store and the justifications', () => {
-            const deliberationDialogue = createDeliberationDialogue();
-            deliberationDialogue.claim(deliberationDialogue.agents[0], 'atmosphere(restaurantOne).');
-
-            expect(() => {
-              deliberationDialogue.since(deliberationDialogue.agents[1], null, 'acceptableRestaurant(restaurantOne).', ['atmosphere(restaurantOne).']);
-            }).toThrow('Pre-conditions of agent two offering reasoning for "restaurant one has property acceptable restaurant" are not satisfied because the agent cannot demonstrate the claim through their knowledge base, commitment store, and the justifications!');
-          });
+          expect(() => {
+            deliberationDialogue.concedeSince(deliberationDialogue.agents[1], 'acceptableRestaurant(restaurantOne).', ['quality(restaurantOne,good).', 'atmosphere(restaurantOne).']);
+          }).not.toThrow();
         });
 
-        describe('p(a) ∈ Com_ag_j for some ag_j ≠ ag_i', () => {
-          it('Passes if some other agent\'s commitment store contains the justifications', () => {
-            const deliberationDialogue = createDeliberationDialogue();
-            deliberationDialogue.claim(deliberationDialogue.agents[0], 'quality(restaurantOne,good).');
-            deliberationDialogue.claim(deliberationDialogue.agents[0], 'atmosphere(restaurantOne).');
+        it('Fails if the agent cannot demonstrate the claim through their knowledge base, commitment store and the justifications', () => {
+          const deliberationDialogue = createDeliberationDialogue();
+          deliberationDialogue.claim(deliberationDialogue.agents[0], 'atmosphere(restaurantOne).');
 
-            expect(() => {
-              deliberationDialogue.since(deliberationDialogue.agents[1], null, 'acceptableRestaurant(restaurantOne).', ['quality(restaurantOne,good).', 'atmosphere(restaurantOne).']);
-            }).not.toThrow();
-          });
-
-          it('Fails if  no other agent\'s commitment store contains the justifications', () => {
-            const deliberationDialogue = createDeliberationDialogue();
-            deliberationDialogue.claim(deliberationDialogue.agents[0], 'atmosphere(restaurantOne).');
-
-            expect(() => {
-              deliberationDialogue.since(deliberationDialogue.agents[1], null, 'acceptableRestaurant(restaurantOne).', ['quality(restaurantOne,good).', 'atmosphere(restaurantOne).']);
-            }).toThrow('Pre-conditions of agent two offering reasoning for "restaurant one has property acceptable restaurant" are not satisfied because no other agent\'s commitment store contains the justifications!');
-          });
+          expect(() => {
+            deliberationDialogue.concedeSince(deliberationDialogue.agents[1], 'acceptableRestaurant(restaurantOne).', ['atmosphere(restaurantOne).']);
+          }).toThrow('Pre-conditions of agent two conceding to and offering reasoning for "restaurant one has property acceptable restaurant" are not satisfied because the agent cannot demonstrate the claim through their knowledge base, commitment store, and the justifications!');
         });
       });
 
-      describe('Post-conditions', () => {
-        describe('Com_ag_i ⇒ Com_ag_i ∪ ∏', () => {
-          it('Passes if the justifications are added to the agent\'s commitment store', () => {
-            const deliberationDialogue = createDeliberationDialogue();
-            deliberationDialogue.claim(deliberationDialogue.agents[0], 'quality(restaurantOne,good).');
-            deliberationDialogue.claim(deliberationDialogue.agents[0], 'atmosphere(restaurantOne).');
-            deliberationDialogue.since(deliberationDialogue.agents[1], null, 'acceptableRestaurant(restaurantOne).', ['quality(restaurantOne,good).', 'atmosphere(restaurantOne).']);
+      describe('p(a) ∈ Com_ag_j for some ag_j ≠ ag_i', () => {
+        it('Passes if some other agent\'s commitment store contains the justifications', () => {
+          const deliberationDialogue = createDeliberationDialogue();
+          deliberationDialogue.claim(deliberationDialogue.agents[0], 'quality(restaurantOne,good).');
+          deliberationDialogue.claim(deliberationDialogue.agents[0], 'atmosphere(restaurantOne).');
 
-            expect(deliberationDialogue.agents[1].commitmentStore).toContain('quality(restaurantOne,good).\natmosphere(restaurantOne).');
-          });
+          expect(() => {
+            deliberationDialogue.concedeSince(deliberationDialogue.agents[1], 'acceptableRestaurant(restaurantOne).', ['quality(restaurantOne,good).', 'atmosphere(restaurantOne).']);
+          }).not.toThrow();
         });
 
-        describe('Com_O ⇒ Com_O ∪ p(X) ∈ B, where B is the set of terms in the body of the agreed preference rule', () => {
-          it('Passes if every p(X) ∈ B is added to the agent\'s commitment store', () => {
-            const deliberationDialogue = createDeliberationDialogue();
-            deliberationDialogue.claim(deliberationDialogue.agents[0], 'quality(restaurantOne,good).');
-            deliberationDialogue.claim(deliberationDialogue.agents[0], 'atmosphere(restaurantOne).');
-            deliberationDialogue.since(deliberationDialogue.agents[1], null, 'acceptableRestaurant(restaurantOne).', ['quality(restaurantOne,good).', 'atmosphere(restaurantOne).']);
+        it('Fails if  no other agent\'s commitment store contains the justifications', () => {
+          const deliberationDialogue = createDeliberationDialogue();
+          deliberationDialogue.claim(deliberationDialogue.agents[0], 'atmosphere(restaurantOne).');
 
-            expect(deliberationDialogue.agents[1].commitmentStore).toContain('quality(X,good):-recommended(X,Y),trustworthy(Y).');
-          });
+          expect(() => {
+            deliberationDialogue.concedeSince(deliberationDialogue.agents[1], 'acceptableRestaurant(restaurantOne).', ['quality(restaurantOne,good).', 'atmosphere(restaurantOne).']);
+          }).toThrow('Pre-conditions of agent two conceding to and offering reasoning for "restaurant one has property acceptable restaurant" are not satisfied because no other agent\'s commitment store contains the justifications!');
+        });
+      });
+    });
+
+    describe('Post-conditions', () => {
+      describe('Com_ag_i ⇒ Com_ag_i ∪ p(a)', () => {
+        it('Passes if the justifications are added to the agent\'s commitment store', () => {
+          const deliberationDialogue = createDeliberationDialogue();
+          deliberationDialogue.claim(deliberationDialogue.agents[0], 'quality(restaurantOne,good).');
+          deliberationDialogue.claim(deliberationDialogue.agents[0], 'atmosphere(restaurantOne).');
+          deliberationDialogue.concedeSince(deliberationDialogue.agents[1], 'acceptableRestaurant(restaurantOne).', ['quality(restaurantOne,good).', 'atmosphere(restaurantOne).']);
+
+          expect(deliberationDialogue.agents[1].commitmentStore).toContain('quality(restaurantOne,good).\natmosphere(restaurantOne).');
+        });
+      });
+
+      describe('Com_O ⇒ Com_O ∪ p(X) ∈ B, where B is the set of terms in the body of the agreed preference rule', () => {
+        it('Passes if every p(X) ∈ B is added to the agent\'s commitment store', () => {
+          const deliberationDialogue = createDeliberationDialogue();
+          deliberationDialogue.claim(deliberationDialogue.agents[0], 'quality(restaurantOne,good).');
+          deliberationDialogue.claim(deliberationDialogue.agents[0], 'atmosphere(restaurantOne).');
+          deliberationDialogue.concedeSince(deliberationDialogue.agents[1], 'acceptableRestaurant(restaurantOne).', ['quality(restaurantOne,good).', 'atmosphere(restaurantOne).']);
+
+          expect(deliberationDialogue.agents[1].commitmentStore).toContain('quality(X,good):-recommended(X,Y),trustworthy(Y).');
         });
       });
     });
