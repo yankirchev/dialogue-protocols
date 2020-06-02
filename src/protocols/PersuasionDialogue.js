@@ -61,9 +61,11 @@ class PersuasionDialogue extends Dialogue {
 
       for (const line of agent.knowledgeBase.split('\n')) {
         if (/^acceptableRestaurant\(X/.test(line)) {
-          for (const match of line.match(/(?<=,|-|, \()([A-Za-z0-9])+(?=\()/g)) {
-            if (!termsToCheck.includes(match)) {
-              termsToCheck.push(match);
+          for (let m of line.match(/(,|-|, \()([A-Za-z0-9])+(?=\()/g)) {
+            m = m.match(/([A-Za-z0-9]+)/g)[0];
+
+            if (!termsToCheck.includes(m)) {
+              termsToCheck.push(m);
             }
           }
         }
@@ -72,9 +74,11 @@ class PersuasionDialogue extends Dialogue {
       for (let i = 0; i < termsToCheck.length; i++) {
         for (const line of agent.knowledgeBase.split('\n')) {
           if (new RegExp('^' + termsToCheck[i] + '\\(X').test(line)) {
-            for (const match of line.match(/(?<=,|-|, \()([A-Za-z0-9])+(?=\()/g)) {
-              if (!termsToCheck.includes(match)) {
-                termsToCheck.push(match);
+            for (let m of line.match(/(,|-|, \()([A-Za-z0-9])+(?=\()/g)) {
+              m = m.match(/([A-Za-z0-9]+)/g)[0];
+
+              if (!termsToCheck.includes(m)) {
+                termsToCheck.push(m);
               }
             }
           }
@@ -158,9 +162,11 @@ class PersuasionDialogue extends Dialogue {
 
       for (const line of agent.knowledgeBase.split('\n')) {
         if (/^acceptableRestaurant\(X/.test(line)) {
-          for (const match of line.match(/(?<=,|-|, \()([A-Za-z0-9])+(?=\()/g)) {
-            if (!termsToCheck.includes(match)) {
-              termsToCheck.push(match);
+          for (let m of line.match(/(,|-|, \()([A-Za-z0-9])+(?=\()/g)) {
+            m = m.match(/([A-Za-z0-9]+)/g)[0];
+
+            if (!termsToCheck.includes(m)) {
+              termsToCheck.push(m);
             }
           }
         }
@@ -169,9 +175,11 @@ class PersuasionDialogue extends Dialogue {
       for (let i = 0; i < termsToCheck.length; i++) {
         for (const line of agent.knowledgeBase.split('\n')) {
           if (new RegExp('^' + termsToCheck[i] + '\\(X').test(line)) {
-            for (const match of line.match(/(?<=,|-|, \()([A-Za-z0-9])+(?=\()/g)) {
-              if (!termsToCheck.includes(match)) {
-                termsToCheck.push(match);
+            for (let m of line.match(/(,|-|, \()([A-Za-z0-9])+(?=\()/g)) {
+              m = m.match(/([A-Za-z0-9]+)/g)[0];
+
+              if (!termsToCheck.includes(m)) {
+                termsToCheck.push(m);
               }
             }
           }
@@ -243,9 +251,11 @@ class PersuasionDialogue extends Dialogue {
 
       for (const line of agent.knowledgeBase.split('\n')) {
         if (/^acceptableRestaurant\(X/.test(line)) {
-          for (const match of line.match(/(?<=,|-|, \()([A-Za-z0-9])+(?=\()/g)) {
-            if (!termsToCheck.includes(match)) {
-              termsToCheck.push(match);
+          for (let m of line.match(/(,|-|, \()([A-Za-z0-9])+(?=\()/g)) {
+            m = m.match(/([A-Za-z0-9]+)/g)[0];
+
+            if (!termsToCheck.includes(m)) {
+              termsToCheck.push(m);
             }
           }
         }
@@ -254,9 +264,11 @@ class PersuasionDialogue extends Dialogue {
       for (let i = 0; i < termsToCheck.length; i++) {
         for (const line of agent.knowledgeBase.split('\n')) {
           if (new RegExp('^' + termsToCheck[i] + '\\(X').test(line)) {
-            for (const match of line.match(/(?<=,|-|, \()([A-Za-z0-9])+(?=\()/g)) {
-              if (!termsToCheck.includes(match)) {
-                termsToCheck.push(match);
+            for (let m of line.match(/(,|-|, \()([A-Za-z0-9])+(?=\()/g)) {
+              m = m.match(/([A-Za-z0-9]+)/g)[0];
+
+              if (!termsToCheck.includes(m)) {
+                termsToCheck.push(m);
               }
             }
           }
@@ -328,9 +340,11 @@ class PersuasionDialogue extends Dialogue {
 
       for (const line of agent.knowledgeBase.split('\n')) {
         if (/^acceptableRestaurant\(X/.test(line)) {
-          for (const match of line.match(/(?<=,|-|, \()([A-Za-z0-9])+(?=\()/g)) {
-            if (!termsToCheck.includes(match)) {
-              termsToCheck.push(match);
+          for (let m of line.match(/(,|-|, \()([A-Za-z0-9])+(?=\()/g)) {
+            m = m.match(/([A-Za-z0-9]+)/g)[0];
+
+            if (!termsToCheck.includes(m)) {
+              termsToCheck.push(m);
             }
           }
         }
@@ -339,9 +353,11 @@ class PersuasionDialogue extends Dialogue {
       for (let i = 0; i < termsToCheck.length; i++) {
         for (const line of agent.knowledgeBase.split('\n')) {
           if (new RegExp('^' + termsToCheck[i] + '\\(X').test(line)) {
-            for (const match of line.match(/(?<=,|-|, \()([A-Za-z0-9])+(?=\()/g)) {
-              if (!termsToCheck.includes(match)) {
-                termsToCheck.push(match);
+            for (let m of line.match(/(,|-|, \()([A-Za-z0-9])+(?=\()/g)) {
+              m = m.match(/([A-Za-z0-9]+)/g)[0];
+
+              if (!termsToCheck.includes(m)) {
+                termsToCheck.push(m);
               }
             }
           }

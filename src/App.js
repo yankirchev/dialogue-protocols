@@ -66,7 +66,7 @@ class App extends Component {
           <div className="bx--footer-info">
             <div className="bx--footer-info__item">
               <p className="bx--footer-label">Copyright &copy; Yanko Kirchev 2019</p>
-              <Link href="mailto:sgykirch@liverpool.ac.uk">Contact the author</Link>
+              <Link href="mailto:yankirchev.dinersdiscourse@gmail.com">Contact the author</Link>
             </div>
             <div className="bx--footer-info__item">
               <p className="bx--footer-label">Powered by Carbon Components (React)</p>
